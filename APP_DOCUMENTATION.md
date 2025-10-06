@@ -58,7 +58,7 @@ Each word tracks:
   - Cross-level review (previous levels)
 
 ### 3. Review Phase
-- **Trigger**: When all words in level are mastered (or 80%+)
+- **Trigger**: When ALL words in level are mastered
 - **Process**: Each word appears twice in random order
 - **Success**: Shows "Review" + "Retest" options
 - **Failure**: Returns to study mode with missed words marked tricky
@@ -96,9 +96,17 @@ Each word tracks:
 - **Retry Logic**: Failed words appear after 3 other words
 - **Cross-Level Review**: Previous level words included based on review mode
 
+### Streak Counter (General Review Mode)
+- **Visual Bar**: 20 segments that fill as streak increases
+- **Streak Range**: 0 to 22 (capped at 22 for challenge)
+- **Glow Effect**: Appears when bar fills completely (streak 20)
+- **Rainbow Effect**: Appears after maintaining full bar for 2 more correct answers (streak 22)
+- **Gentle Penalty**: Wrong answers only reduce streak by 1 segment
+- **Reset on Entry**: Streak resets to middle (10) when entering general review mode
+
 ### Review Modes
 - **Current Level Focus**: Prioritizes current level, minimal previous level inclusion
-- **General Review**: Balanced approach for long-term retention
+- **General Review**: Shows only mastered words from ALL levels (Red through Light Blue), with enhanced tricky word priority for retention. Uses dedicated word selection logic that bypasses current-level restrictions.
 
 ## UI Components
 
@@ -115,9 +123,10 @@ Each word tracks:
 - Keyboard shortcuts: W = wrong, R = right
 
 ### Footer
-- Mastery progress bar
-- Final review progress bar
-- Statistics pills (Learned, Remaining, Seen, Tricky)
+- **Study Mode**: Single "Mastery" progress bar showing word mastery progress, Statistics pills (Learned, Remaining, Seen, Tricky)
+- **Review Mode**: Single "Review Progress" bar showing review session progress, Statistics pills (Learned, Remaining, Seen, Tricky)
+- **Test Mode**: Single "Test Progress" bar showing test completion progress, Statistics pills (Learned, Remaining, Seen, Tricky)
+- **General Review Mode**: "Streak:" label with visual streak bar (20 segments), gentle dip on wrong answers, glow when bar fills (20), rainbow after maintaining streak (22)
 
 ### Modals
 - **Welcome**: Name entry and practice mode selection
@@ -137,11 +146,31 @@ Each word tracks:
 5. **Improved Button Styling**: Made all welcome modal buttons consistent
 6. **Fixed Button Conflicts**: Resolved ID conflicts between header and modal buttons
 7. **Enhanced Badge Celebration**: Improved confetti animation and timing
+8. **Fixed General Review Mode**: Now properly shows only mastered words from all levels
+9. **Enhanced Review Mode UI**: Phase badge shows "Review Mode" when in general review
+10. **Improved Review Mode Switching**: Exiting general review now opens level picker
+11. **Enhanced Tricky Word Priority**: Tricky words get higher priority in general review mode
+12. **Added Streak Counter**: Replaces status bars in review mode with engaging streak counter
+13. **Implemented Visual Effects**: Glowing effects at 10+ streak, rainbow effects at 15+ streak
+14. **Enhanced Engagement**: Streak counter starts at middle (10/20) and dips down gently on wrong answers
+15. **Kinder-Friendly Design**: Streak only dips by 1 segment on wrong answers (not 3)
+16. **Independent Review Mode**: General review mode works separately from test/review phases
+17. **Fixed Streak Reset**: Streak meter resets to middle (10) when entering general review mode
+18. **Fixed All-Levels Selection**: General review now properly includes mastered words from ALL levels
+19. **Perfect Glow/Rainbow Timing**: Glow appears when bar fills (20), rainbow after maintaining streak for 2 more (22), capped at 22 for challenge
+20. **Removed Streak Counter Text**: Clean visual-only streak bar without distracting numbers
+21. **Clean Review Mode Interface**: Hidden progress bars in general review mode, only shows "Streak:" label and visual bar
+22. **Fixed All-Levels Word Selection**: General review mode now truly shows words from ALL mastered levels, not just current level
+23. **Dedicated General Review Logic**: Bypasses all current-level-specific logic when in general review mode
+24. **Simplified Progress Bar Display**: Progress bars now show only one bar at a time - "Mastery" during study phase, "Review Progress" during review phase, and "Test Progress" during test phase
+25. **Fixed Test Trigger**: Changed test offering to require ALL words mastered instead of 80% threshold
 
 ### Known Issues & Solutions
 - **Text appearing in word display**: Fixed by adding phase checks in `nextWord()`
 - **Modal state conflicts**: Resolved by using unique IDs and proper state management
 - **Button functionality**: Fixed by ensuring proper event listener setup
+- **General review mode showing only current level**: Fixed by implementing dedicated logic that bypasses current-level restrictions
+- **Streak counter timing issues**: Fixed with proper glow/rainbow timing and streak capping
 
 ## Development Notes
 
