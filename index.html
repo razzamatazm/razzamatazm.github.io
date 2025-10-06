@@ -501,8 +501,8 @@
         <span class="pill">Badge added to your belt</span>
       </div>
       <div class="btn-row">
-        <button id="reviewAgainBtn">Review again</button>
-        <button class="ghost" id="pickNextLevelBtn">Pick another level</button>
+        <button id="reviewAgainBtn">Next Level</button>
+        <button class="ghost" id="pickNextLevelBtn">Choose a Level</button>
       </div>
     </div>
   </div>
@@ -589,6 +589,7 @@
     let studentName = state.studentName || '';
     let cooldownNextKnown = state.cooldownNextKnown || 0; // after a miss, force next to known
     let reviewMode = state.reviewMode || 'current'; // 'current' or 'general'
+    let isAfterSuccessfulReview = false; // Track if we're showing options after a successful review
     
     // Learning science additions
     function generateSessionId() {
@@ -1434,7 +1435,29 @@
     function openPreFinal(){
       const lvl = LEVELS[levelIdx];
       document.getElementById('badgeName').textContent = lvl.name;
-      resetPreFinalModal(); // Reset to original state
+      
+      // Show both review and retest options initially
+      document.querySelector('#preFinalOverlay h2').textContent = 'Looks like you\'ve got these words!';
+      document.querySelector('#preFinalOverlay .muted').innerHTML = 'Want to review or retest? You can earn your <b>' + lvl.name + '</b> badge!';
+      document.querySelector('#preFinalOverlay .row .muted').textContent = 'Choose what you\'d like to do:';
+      
+      // Show both options from the start
+      const btnRow = document.querySelector('#preFinalOverlay .btn-row');
+      btnRow.innerHTML = `
+        <button id="startReviewBtn">Review</button>
+        <button id="startFinalBtn">Retest</button>
+      `;
+      
+      // Add event listeners
+      document.getElementById('startReviewBtn').addEventListener('click', ()=>{
+        closePreFinal(); phase='review'; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; updatePhaseBadge(); saveState(); nextWord();
+      });
+      
+      document.getElementById('startFinalBtn').addEventListener('click', ()=>{
+        closePreFinal(); phase='final'; finalQueue=[]; finalPosition=0; testResults=[]; updatePhaseBadge(); saveState(); nextWord();
+      });
+      
+      isAfterSuccessfulReview = false; // Reset the flag
       document.getElementById('preFinalOverlay').classList.add('show');
     }
     function closePreFinal(){ document.getElementById('preFinalOverlay').classList.remove('show'); }
@@ -1485,19 +1508,19 @@
       const lvl = LEVELS[levelIdx];
       document.getElementById('badgeName').textContent = lvl.name;
       
-      // Update the modal content to show both review and test options
-      document.querySelector('#preFinalOverlay h2').textContent = 'Great job on the review! 🎉';
-      document.querySelector('#preFinalOverlay .muted').innerHTML = 'You got them all right! Ready for the test to earn your <b>' + lvl.name + '</b> badge?';
-      document.querySelector('#preFinalOverlay .row .muted').textContent = 'Choose what you\'d like to do next:';
+      // After successful review, show the same options again
+      document.querySelector('#preFinalOverlay h2').textContent = 'Looks like you\'ve got these words!';
+      document.querySelector('#preFinalOverlay .muted').innerHTML = 'Want to review or retest? You can earn your <b>' + lvl.name + '</b> badge!';
+      document.querySelector('#preFinalOverlay .row .muted').textContent = 'Choose what you\'d like to do:';
       
-      // Update the button row to show both options
+      // Show both options
       const btnRow = document.querySelector('#preFinalOverlay .btn-row');
       btnRow.innerHTML = `
-        <button id="startReviewBtn">Review Again</button>
-        <button id="startFinalBtn">Take Test</button>
+        <button id="startReviewBtn">Review</button>
+        <button id="startFinalBtn">Retest</button>
       `;
       
-      // Re-add event listeners for the new buttons
+      // Add event listeners
       document.getElementById('startReviewBtn').addEventListener('click', ()=>{
         closePreFinal(); phase='review'; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; updatePhaseBadge(); saveState(); nextWord();
       });
@@ -1506,6 +1529,7 @@
         closePreFinal(); phase='final'; finalQueue=[]; finalPosition=0; testResults=[]; updatePhaseBadge(); saveState(); nextWord();
       });
       
+      isAfterSuccessfulReview = true; // Set the flag
       document.getElementById('preFinalOverlay').classList.add('show');
     }
     
@@ -1734,7 +1758,13 @@
     document.getElementById('reviewAgainBtn').addEventListener('click', ()=>{
       document.getElementById('success').classList.remove('show');
       hideBadgeCelebration();
-      phase='final'; finalQueue=[]; finalPosition=0; testResults=[]; updatePhaseBadge(); saveState(); nextWord();
+      // Go to next level
+      if (levelIdx < LEVELS.length - 1) {
+        switchLevel(levelIdx + 1);
+      } else {
+        // If at last level, just open level picker
+        openLevelPicker();
+      }
     });
     document.getElementById('pickNextLevelBtn').addEventListener('click', ()=>{
       document.getElementById('success').classList.remove('show');
