@@ -1435,11 +1435,10 @@
     // ======= MODALS / TEST / REVIEW =======
     function openPreFinal(){
       const lvl = LEVELS[levelIdx];
-      document.getElementById('badgeName').textContent = lvl.name;
       
       // Show both review and retest options initially
       document.querySelector('#preFinalOverlay h2').textContent = 'Looks like you\'ve got these words!';
-      document.querySelector('#preFinalOverlay .muted').innerHTML = 'Want to review or retest? You can earn your <b>' + lvl.name + '</b> badge!';
+      document.querySelector('#preFinalOverlay .muted').innerHTML = 'Want to review or retest? You can earn your <b id="badgeName">' + lvl.name + '</b> badge!';
       document.querySelector('#preFinalOverlay .row .muted').textContent = 'Choose what you\'d like to do:';
       
       // Show both options from the start
@@ -1515,11 +1514,10 @@
     function showReviewSuccessModal(){
       console.log('showReviewSuccessModal called');
       const lvl = LEVELS[levelIdx];
-      document.getElementById('badgeName').textContent = lvl.name;
       
-      // After successful review, show the same options again
+      // Update the modal content to show both review and test options
       document.querySelector('#preFinalOverlay h2').textContent = 'Looks like you\'ve got these words!';
-      document.querySelector('#preFinalOverlay .muted').innerHTML = 'Want to review or retest? You can earn your <b>' + lvl.name + '</b> badge!';
+      document.querySelector('#preFinalOverlay .muted').innerHTML = 'Want to review or retest? You can earn your <b id="badgeName">' + lvl.name + '</b> badge!';
       document.querySelector('#preFinalOverlay .row .muted').textContent = 'Choose what you\'d like to do:';
       
       // Show both options
