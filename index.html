@@ -628,8 +628,6 @@
       successText: document.getElementById('successText'),
       earnedBadge: document.getElementById('earnedBadge'),
       preFinalOverlay: document.getElementById('preFinalOverlay'),
-      notYetBtn: document.getElementById('notYetBtn'),
-      startFinalBtn: document.getElementById('startFinalBtn'),
       testResultOverlay: document.getElementById('testResultOverlay'),
       testResultTitle: document.getElementById('testResultTitle'),
       testResultSub: document.getElementById('testResultSub'),
@@ -1680,9 +1678,6 @@
       closePreFinal(); phase='review'; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; updatePhaseBadge(); saveState(); nextWord();
     });
     
-    document.getElementById('startFinalBtn').addEventListener('click', ()=>{
-      closePreFinal(); phase='final'; finalQueue=[]; finalPosition=0; testResults=[]; updatePhaseBadge(); saveState(); nextWord();
-    });
 
     document.getElementById('startQuickReviewBtn').addEventListener('click', ()=>{
       closeTestResultsOverlay(); 
