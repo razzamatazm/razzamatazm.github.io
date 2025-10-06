@@ -1190,6 +1190,7 @@
     }
 
     function nextWord(){
+      console.log('nextWord called', { phase, wordsCount: words().length, firstPassQueueLength: firstPassQueue.length });
       if (!words().length){ setWord('No words in this level.'); return; }
 
       if (phase === 'study'){
@@ -1282,7 +1283,12 @@
         }
 
         // Fallback to old system if unified pool fails
-        const idx = pickWeightedIndex(words().map((_,i)=>i));
+        const allIndices = words().map((_,i)=>i);
+        if (allIndices.length === 0) {
+          setWord('No words available in this level.');
+          return;
+        }
+        const idx = pickWeightedIndex(allIndices);
         currentIndex = idx; pushHistory(idx);
         onWordShown(idx);
         setWord(words()[idx].text);
@@ -1736,15 +1742,19 @@
 
     // ======= BOOT =======
     function boot(){
+      console.log('Boot starting...', { studentName, levelIdx, phase, wordsCount: words().length });
+      
       // Ensure per-level words match config
       state.perLevel.forEach((_, i)=>syncWordsWithConfig(i));
 
       updateHeader(); updateBadges(); updatePhaseBadge(); updateReviewModeButton(); updateProgressBars();
 
       // Name and practice mode FIRST; only after both are set do we show level picker
-      if (!studentName || !state.reviewMode){ 
+      if (!studentName){ 
+        console.log('No student name, opening welcome');
         openWelcome(); 
       } else { 
+        console.log('Student name exists, opening level picker');
         openLevelPicker(); 
         nextWord(); // Only call nextWord if we're not showing welcome modal
       }
