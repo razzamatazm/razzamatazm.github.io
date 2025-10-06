@@ -201,7 +201,7 @@
     }
     .badge-burst .emoji-badge{
       font-size:140px; filter:drop-shadow(0 16px 40px rgba(0,0,0,.6));
-      animation:badgeFloat 2s ease-in-out infinite;
+      animation:badgeFloat 2s ease-in-out infinite, badgeFadeOut 0.8s ease-out 1.2s forwards;
     }
     
     /* Confetti Styles */
@@ -248,12 +248,16 @@
       50%{transform:scale(1.2) rotate(180deg); opacity:1;}
       100%{transform:scale(1) rotate(360deg); opacity:1;}
     }
+    @keyframes badgeFadeOut{
+      0%{opacity:1;}
+      100%{opacity:0;}
+    }
     @keyframes badgeFloat{
       0%,100%{transform:translateY(0px);}
       50%{transform:translateY(-10px);}
     }
     @keyframes confettiFall{
-      0%{transform:translateY(-120px) rotate(0deg) translateX(0px); opacity:1;}
+      0%{transform:translateY(0px) rotate(0deg) translateX(0px); opacity:1;}
       25%{transform:translateY(25vh) rotate(180deg) translateX(20px); opacity:0.8;}
       50%{transform:translateY(50vh) rotate(360deg) translateX(-15px); opacity:0.6;}
       75%{transform:translateY(75vh) rotate(540deg) translateX(10px); opacity:0.4;}
@@ -978,7 +982,37 @@
         const confetti = document.createElement('div');
         confetti.className = 'confetti-piece';
         confetti.style.background = confettiColors[i % confettiColors.length];
-        confetti.style.left = Math.random() * 100 + '%';
+        
+        // Create variety in starting positions - some from top, some from sides, some from corners
+        const startPosition = Math.random();
+        let startX, startY;
+        
+        if (startPosition < 0.4) {
+          // 40% from top edge (various horizontal positions)
+          startX = Math.random() * 100 + '%';
+          startY = '-150px';
+        } else if (startPosition < 0.7) {
+          // 30% from left side
+          startX = '-50px';
+          startY = Math.random() * 100 + '%';
+        } else if (startPosition < 0.9) {
+          // 20% from right side
+          startX = '100%';
+          startY = Math.random() * 100 + '%';
+        } else {
+          // 10% from corners (more dramatic)
+          const corner = Math.random();
+          if (corner < 0.5) {
+            startX = '-100px';
+            startY = '-100px';
+          } else {
+            startX = '100%';
+            startY = '-100px';
+          }
+        }
+        
+        confetti.style.left = startX;
+        confetti.style.top = startY;
         confetti.style.animationDelay = Math.random() * 2 + 's';
         confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
         els.confettiContainer.appendChild(confetti);
@@ -986,6 +1020,12 @@
       
       els.celebrationBadge.textContent = badgeEmoji;
       els.badgeCelebration.classList.add('show');
+      
+      // Hide the celebration container after confetti has fallen (4-5 seconds)
+      // This allows confetti to fall naturally off screen
+      setTimeout(() => {
+        hideBadgeCelebration();
+      }, 5000);
     }
     
     function hideBadgeCelebration(){
@@ -1585,10 +1625,8 @@
         document.getElementById('earnedBadge').textContent = lvl.badge || '🏅';
         document.getElementById('success').classList.add('show');
 
-        // Show celebration animation for newly earned badges
-        if (!wasAlreadyEarned) {
-          showBadgeCelebration(lvl.badge);
-        }
+        // Show celebration animation for all perfect test scores
+        showBadgeCelebration(lvl.badge);
 
         phase = 'study';
         finalQueue = []; finalPosition = 0;
@@ -1866,7 +1904,7 @@
               </div>
             </button>
             
-            <button id="reviewModeBtn" style="background:var(--panel); color:var(--fg); border:1px solid rgba(255,255,255,0.10); border-radius:10px; padding:12px 16px; font-weight:700; cursor:pointer; font-size:16px; text-align:left;">
+            <button id="welcomeReviewModeBtn" style="background:var(--panel); color:var(--fg); border:1px solid rgba(255,255,255,0.10); border-radius:10px; padding:12px 16px; font-weight:700; cursor:pointer; font-size:16px; text-align:left;">
               <div style="display:flex; align-items:center; gap:12px;">
                 <div style="width:20px; height:20px; border-radius:50%; background:#fbbf24; display:flex; align-items:center; justify-content:center; font-size:12px;">📚</div>
                 <div>
@@ -1875,10 +1913,6 @@
                 </div>
               </div>
             </button>
-          </div>
-          
-          <div class="btn-row" style="margin-top:20px">
-            <button id="startCurrentLevelBtn">Start ${LEVELS[levelIdx].name} Level</button>
           </div>
         </div>
       `;
@@ -1896,17 +1930,12 @@
         openLevelPicker();
       });
       
-      document.getElementById('reviewModeBtn').addEventListener('click', () => {
+      document.getElementById('welcomeReviewModeBtn').addEventListener('click', () => {
         modal.remove();
         // Switch to general review mode and start
         reviewMode = 'general';
         updateReviewModeButton();
         saveState();
-        nextWord();
-      });
-      
-      document.getElementById('startCurrentLevelBtn').addEventListener('click', () => {
-        modal.remove();
         nextWord();
       });
       
