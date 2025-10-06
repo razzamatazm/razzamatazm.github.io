@@ -1844,26 +1844,39 @@
         <div class="card">
           <h2>Welcome back, ${studentName}! 👋</h2>
           <div class="muted">Ready to continue your sight words journey?</div>
-          <div style="margin-top:16px">
-            <div class="muted">Continue with your current level:</div>
-            <div style="margin-top:8px; display:flex; gap:8px; flex-direction:column;">
-              <button id="continueCurrentBtn" style="background:var(--panel); color:var(--fg); border:1px solid rgba(255,255,255,0.10); border-radius:10px; padding:12px 16px; font-weight:700; cursor:pointer; font-size:16px;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                  <div style="width:20px; height:20px; border-radius:50%; background:${LEVELS[levelIdx].color}"></div>
-                  <div>
-                    <div style="font-weight:800;">${LEVELS[levelIdx].name} Level</div>
-                    <div style="font-size:12px; color:var(--muted);">${masteredCount()}/${words().length} words mastered</div>
-                  </div>
+          
+          <div style="margin-top:20px; display:flex; gap:12px; flex-direction:column;">
+            <button id="continueCurrentBtn" style="background:var(--panel); color:var(--fg); border:1px solid rgba(255,255,255,0.10); border-radius:10px; padding:12px 16px; font-weight:700; cursor:pointer; font-size:16px; text-align:left;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:20px; height:20px; border-radius:50%; background:${LEVELS[levelIdx].color}"></div>
+                <div>
+                  <div style="font-weight:800;">${LEVELS[levelIdx].name} Level</div>
+                  <div style="font-size:12px; color:var(--muted);">${masteredCount()}/${words().length} words mastered</div>
                 </div>
-              </button>
-            </div>
+              </div>
+            </button>
+            
+            <button id="pickLevelBtn" style="background:var(--panel); color:var(--fg); border:1px solid rgba(255,255,255,0.10); border-radius:10px; padding:12px 16px; font-weight:700; cursor:pointer; font-size:16px; text-align:left;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:20px; height:20px; border-radius:50%; background:linear-gradient(45deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #a855f7, #ec4899, #38bdf8);"></div>
+                <div>
+                  <div style="font-weight:800;">Choose Level</div>
+                  <div style="font-size:12px; color:var(--muted);">Pick any level to practice</div>
+                </div>
+              </div>
+            </button>
+            
+            <button id="reviewModeBtn" style="background:var(--panel); color:var(--fg); border:1px solid rgba(255,255,255,0.10); border-radius:10px; padding:12px 16px; font-weight:700; cursor:pointer; font-size:16px; text-align:left;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:20px; height:20px; border-radius:50%; background:#fbbf24; display:flex; align-items:center; justify-content:center; font-size:12px;">📚</div>
+                <div>
+                  <div style="font-weight:800;">Review All Known Words</div>
+                  <div style="font-size:12px; color:var(--muted);">Practice words from all completed levels</div>
+                </div>
+              </div>
+            </button>
           </div>
-          <div style="margin-top:16px">
-            <div class="muted">Or pick a different level:</div>
-            <div style="margin-top:8px;">
-              <button id="pickLevelBtn" style="background:transparent; color:var(--fg); border:1px solid rgba(255,255,255,0.10); border-radius:10px; padding:8px 12px; font-weight:700; cursor:pointer; font-size:14px;">Choose Level</button>
-            </div>
-          </div>
+          
           <div class="btn-row" style="margin-top:20px">
             <button id="startCurrentLevelBtn">Start ${LEVELS[levelIdx].name} Level</button>
           </div>
@@ -1881,6 +1894,15 @@
       document.getElementById('pickLevelBtn').addEventListener('click', () => {
         modal.remove();
         openLevelPicker();
+      });
+      
+      document.getElementById('reviewModeBtn').addEventListener('click', () => {
+        modal.remove();
+        // Switch to general review mode and start
+        reviewMode = 'general';
+        updateReviewModeButton();
+        saveState();
+        nextWord();
       });
       
       document.getElementById('startCurrentLevelBtn').addEventListener('click', () => {
