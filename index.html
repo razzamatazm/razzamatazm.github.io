@@ -1731,6 +1731,7 @@
       reviewMode = selectedMode;
       
       updateHeader(); updateReviewModeButton(); saveState(); closeWelcome(); openLevelPicker();
+      nextWord(); // Start showing words after level picker
     });
 
     // ======= BOOT =======
@@ -1741,10 +1742,12 @@
       updateHeader(); updateBadges(); updatePhaseBadge(); updateReviewModeButton(); updateProgressBars();
 
       // Name and practice mode FIRST; only after both are set do we show level picker
-      if (!studentName || !state.reviewMode){ openWelcome(); }
-      else { openLevelPicker(); }
-
-      nextWord();
+      if (!studentName || !state.reviewMode){ 
+        openWelcome(); 
+      } else { 
+        openLevelPicker(); 
+        nextWord(); // Only call nextWord if we're not showing welcome modal
+      }
     }
 
     boot();
