@@ -1434,6 +1434,7 @@
     function openPreFinal(){
       const lvl = LEVELS[levelIdx];
       document.getElementById('badgeName').textContent = lvl.name;
+      resetPreFinalModal(); // Reset to original state
       document.getElementById('preFinalOverlay').classList.add('show');
     }
     function closePreFinal(){ document.getElementById('preFinalOverlay').classList.remove('show'); }
@@ -1462,9 +1463,49 @@
       }
     }
     
+    function resetPreFinalModal(){
+      // Reset the modal to its original state
+      document.querySelector('#preFinalOverlay h2').textContent = 'Looks like you\'ve got these words!';
+      document.querySelector('#preFinalOverlay .muted').innerHTML = 'Let\'s do a quick review to make sure you really know them, then you can earn your <b id="badgeName">Red</b> badge!';
+      document.querySelector('#preFinalOverlay .row .muted').textContent = 'The review shows each word twice in random order. Get them all right to unlock the test!';
+      
+      // Reset the button row to original state
+      const btnRow = document.querySelector('#preFinalOverlay .btn-row');
+      btnRow.innerHTML = `
+        <button id="startReviewBtn">Start Review</button>
+      `;
+      
+      // Re-add event listener for the original button
+      document.getElementById('startReviewBtn').addEventListener('click', ()=>{
+        closePreFinal(); phase='review'; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; updatePhaseBadge(); saveState(); nextWord();
+      });
+    }
+    
     function showReviewSuccessModal(){
       const lvl = LEVELS[levelIdx];
       document.getElementById('badgeName').textContent = lvl.name;
+      
+      // Update the modal content to show both review and test options
+      document.querySelector('#preFinalOverlay h2').textContent = 'Great job on the review! 🎉';
+      document.querySelector('#preFinalOverlay .muted').innerHTML = 'You got them all right! Ready for the test to earn your <b>' + lvl.name + '</b> badge?';
+      document.querySelector('#preFinalOverlay .row .muted').textContent = 'Choose what you\'d like to do next:';
+      
+      // Update the button row to show both options
+      const btnRow = document.querySelector('#preFinalOverlay .btn-row');
+      btnRow.innerHTML = `
+        <button id="startReviewBtn">Review Again</button>
+        <button id="startFinalBtn">Take Test</button>
+      `;
+      
+      // Re-add event listeners for the new buttons
+      document.getElementById('startReviewBtn').addEventListener('click', ()=>{
+        closePreFinal(); phase='review'; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; updatePhaseBadge(); saveState(); nextWord();
+      });
+      
+      document.getElementById('startFinalBtn').addEventListener('click', ()=>{
+        closePreFinal(); phase='final'; finalQueue=[]; finalPosition=0; testResults=[]; updatePhaseBadge(); saveState(); nextWord();
+      });
+      
       document.getElementById('preFinalOverlay').classList.add('show');
     }
     
