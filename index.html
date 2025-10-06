@@ -1,0 +1,1754 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sight Words Trainer — Rainbow Levels</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+    :root{
+      --bg:#0f1115;
+      --fg:#e6e6e6;
+      --muted:#9aa3ad;
+      --panel:#151922;
+      --accent:#6ea8fe;
+      --success:#22c55e;
+      --danger:#ef4444;
+      --gold:#ffd166;
+      --leftTint: rgba(239,68,68,0.24);
+      --rightTint: rgba(16,185,129,0.22);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:linear-gradient(180deg,#0f1115,#0b0e14);
+      color:var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    }
+    .app{display:flex; flex-direction:column; height:100%;}
+    header{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
+      padding:12px 14px; background:rgba(255,255,255,0.03);
+      border-bottom:1px solid rgba(255,255,255,0.06);
+      flex-wrap:wrap;
+    }
+    .header-top {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .header-info {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 16px 14px;
+      }
+      .header-info {
+        justify-content: center;
+        gap: 6px;
+      }
+      .badge-row {
+        justify-content: center;
+      }
+    }
+    .phase-badge{
+      font-size:12px; padding:4px 10px; border-radius:999px;
+      background:rgba(110,168,254,0.12); color:var(--accent);
+      border:1px solid rgba(110,168,254,0.3); letter-spacing:.3px; white-space:nowrap;
+    }
+    .student{font-weight:800; font-size:12px; color:#cbd5e1; opacity:.9}
+    .controls{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+    }
+    @media (max-width: 768px) {
+      .controls {
+        justify-content: center;
+        gap: 6px;
+      }
+      .controls button {
+        font-size: 12px;
+        padding: 6px 10px;
+      }
+    }
+    button{
+      background:var(--panel); color:var(--fg);
+      border:1px solid rgba(255,255,255,0.10); border-radius:10px;
+      padding:8px 12px; font-weight:700; cursor:pointer; font-size:14px;
+    }
+    button:hover{border-color:rgba(255,255,255,0.25)}
+    .ghost{background:transparent;}
+    .badge-row{display:flex; align-items:center; gap:6px; flex-wrap:wrap}
+    .emoji-badge{font-size:18px; line-height:1; filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}
+    .level-chip{
+      padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,0.2); font-weight:700; font-size:12px;
+      display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.04);
+    }
+    .dot{width:10px; height:10px; border-radius:50%}
+    .word-area{
+      flex:1; display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+    }
+    .word{
+      font-size: clamp(64px, 12vw, 160px);
+      font-weight: 900; letter-spacing:1px; line-height:1.0;
+      text-align:center; padding:0 16px; user-select:none;
+      text-shadow: 0 8px 26px rgba(0,0,0,0.5);
+    }
+    .tapzones{ position:absolute; inset:0; display:grid; grid-template-columns:1fr 1fr; }
+    .zone{
+      position:relative; display:flex; align-items:flex-end; justify-content:center; padding:16px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .zone:active{filter:brightness(1.06)}
+    .zone-left{background:linear-gradient(180deg, var(--leftTint), rgba(0,0,0,0))}
+    .zone-right{background:linear-gradient(180deg, var(--rightTint), rgba(0,0,0,0))}
+    .zone-label{
+      pointer-events:none; user-select:none; font-weight:800; font-size:14px; letter-spacing:.2px;
+      padding:7px 11px; border-radius:999px; margin-bottom:12px; opacity:.98;
+      border:1px solid rgba(255,255,255,0.2);
+    }
+    .zone-left .zone-label{background:rgba(239,68,68,0.30); color:#ffe2e2}
+    .zone-right .zone-label{background:rgba(16,185,129,0.30); color:#e0fff5}
+    .tip{
+      position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+      color:#cbd5e1; font-size:12px; text-align:center; opacity:.9;
+      background:rgba(15,23,42,0.6); padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    @media (max-width: 768px) {
+      .tip {
+        bottom: 28px;
+        font-size: 11px;
+      }
+    }
+    footer{
+      padding:16px 14px 20px 14px; background:rgba(255,255,255,0.03);
+      border-top:1px solid rgba(255,255,255,0.06);
+    }
+    @media (max-width: 768px) {
+      footer {
+        padding: 20px 14px 32px 14px; /* Extra bottom padding for mobile browsers */
+      }
+    }
+    .progress{ display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:center }
+    .bar-wrap{ display:flex; gap:10px; align-items:center }
+    .bar-label{ font-size:12px; color:var(--muted); min-width:92px; font-weight:700; letter-spacing:.2px }
+    .bar{
+      position:relative; height:12px; background:#0b0e14; border:1px solid rgba(255,255,255,0.10); border-radius:999px; overflow:hidden; flex:1;
+    }
+    .bar > span{position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, #2d6fea, #5ff3b1)}
+    .stats{display:flex; gap:10px; justify-content:flex-end; font-size:12px; color:var(--muted); flex-wrap:wrap}
+    .pill{padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.03)}
+    /* overlay / modal base */
+    .overlay{
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:30;
+      background:rgba(0,0,0,0.6);
+    }
+    .overlay.show{display:flex;}
+    .card{
+      width:min(720px, 92vw);
+      background:linear-gradient(180deg, #0f141f, #0b1019);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px; padding:18px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.45); color:var(--fg);
+    }
+    .card h2{margin:6px 0 4px 0}
+    .muted{color:var(--muted); margin-top:4px}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .btn-row{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:12px}
+    .fun-wrap{display:flex; gap:14px; align-items:center; margin:6px 0 10px 0}
+    .fun-emoji{font-size:46px; filter:drop-shadow(0 8px 20px rgba(0,0,0,.35))}
+    .level-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:10px; margin-top:10px}
+    .level-btn{
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,0.12); cursor:pointer;
+      background:rgba(255,255,255,0.04);
+    }
+    .level-dot{width:26px; height:26px; border-radius:50%; border:2px solid rgba(255,255,255,0.28)}
+    .level-btn span{font-weight:800}
+    .level-btn small{color:var(--muted)}
+    .success{ position:fixed; inset:0; background:rgba(0,0,0,0.75); display:none; align-items:center; justify-content:center; z-index:25 }
+    .success.show{display:flex;}
+    .success-card{
+      background:linear-gradient(180deg,#122017,#0c160f);
+      border:1px solid rgba(46, 255, 170, 0.25);
+      color:#d7ffe9; padding:26px; border-radius:16px; max-width:520px; text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,0.45);
+    }
+    .trophy{ width:120px; height:120px; margin:0 auto 14px auto; display:block; filter:drop-shadow(0 8px 20px rgba(46,255,170,.25)) }
+    input[type="text"]{
+      background:#0b1220; color:#e6e6e6; border:1px solid rgba(255,255,255,0.15);
+      border-radius:10px; padding:10px 12px; width:100%; font-size:14px;
+    }
+    .center{display:flex; align-items:center; justify-content:center}
+    
+    /* Badge Animation Styles */
+    .badge-celebration{
+      position:fixed; inset:0; z-index:50; pointer-events:none;
+      display:none; align-items:center; justify-content:center;
+    }
+    .badge-celebration.show{display:flex;}
+    .badge-burst{
+      position:relative; animation:badgePop 1.2s cubic-bezier(0.68,-0.55,0.265,1.55);
+    }
+    .badge-burst .emoji-badge{
+      font-size:140px; filter:drop-shadow(0 16px 40px rgba(0,0,0,.6));
+      animation:badgeFloat 2s ease-in-out infinite;
+    }
+    
+    /* Confetti Styles */
+    .confetti-container{
+      position:absolute; inset:0; overflow:hidden; pointer-events:none;
+    }
+    .confetti-piece{
+      position:absolute; width:8px; height:8px; border-radius:2px;
+      animation:confettiFall 3s linear forwards;
+    }
+    .confetti-piece:nth-child(odd){border-radius:50%;}
+    .confetti-piece:nth-child(3n){width:6px; height:12px; border-radius:3px;}
+    .confetti-piece:nth-child(5n){width:10px; height:4px; border-radius:2px;}
+    
+    /* Confetti Colors */
+    .confetti-piece:nth-child(1){background:#ff6b6b; left:10%; animation-delay:0s;}
+    .confetti-piece:nth-child(2){background:#4ecdc4; left:20%; animation-delay:0.1s;}
+    .confetti-piece:nth-child(3){background:#45b7d1; left:30%; animation-delay:0.2s;}
+    .confetti-piece:nth-child(4){background:#f9ca24; left:40%; animation-delay:0.3s;}
+    .confetti-piece:nth-child(5){background:#6c5ce7; left:50%; animation-delay:0.4s;}
+    .confetti-piece:nth-child(6){background:#fd79a8; left:60%; animation-delay:0.5s;}
+    .confetti-piece:nth-child(7){background:#00b894; left:70%; animation-delay:0.6s;}
+    .confetti-piece:nth-child(8){background:#e17055; left:80%; animation-delay:0.7s;}
+    .confetti-piece:nth-child(9){background:#74b9ff; left:90%; animation-delay:0.8s;}
+    .confetti-piece:nth-child(10){background:#fd79a8; left:15%; animation-delay:0.9s;}
+    .confetti-piece:nth-child(11){background:#fdcb6e; left:25%; animation-delay:1.0s;}
+    .confetti-piece:nth-child(12){background:#6c5ce7; left:35%; animation-delay:1.1s;}
+    .confetti-piece:nth-child(13){background:#00b894; left:45%; animation-delay:1.2s;}
+    .confetti-piece:nth-child(14){background:#e84393; left:55%; animation-delay:1.3s;}
+    .confetti-piece:nth-child(15){background:#00cec9; left:65%; animation-delay:1.4s;}
+    .confetti-piece:nth-child(16){background:#fdcb6e; left:75%; animation-delay:1.5s;}
+    .confetti-piece:nth-child(17){background:#a29bfe; left:85%; animation-delay:1.6s;}
+    .confetti-piece:nth-child(18){background:#ff7675; left:95%; animation-delay:1.7s;}
+    .confetti-piece:nth-child(19){background:#00b894; left:5%; animation-delay:1.8s;}
+    .confetti-piece:nth-child(20){background:#fdcb6e; left:12%; animation-delay:1.9s;}
+    .confetti-piece:nth-child(21){background:#6c5ce7; left:22%; animation-delay:2.0s;}
+    .confetti-piece:nth-child(22){background:#fd79a8; left:32%; animation-delay:2.1s;}
+    .confetti-piece:nth-child(23){background:#00cec9; left:42%; animation-delay:2.2s;}
+    .confetti-piece:nth-child(24){background:#e17055; left:52%; animation-delay:2.3s;}
+    .confetti-piece:nth-child(25){background:#74b9ff; left:62%; animation-delay:2.4s;}
+    
+    @keyframes badgePop{
+      0%{transform:scale(0) rotate(0deg); opacity:0;}
+      50%{transform:scale(1.2) rotate(180deg); opacity:1;}
+      100%{transform:scale(1) rotate(360deg); opacity:1;}
+    }
+    @keyframes badgeFloat{
+      0%,100%{transform:translateY(0px);}
+      50%{transform:translateY(-10px);}
+    }
+    @keyframes confettiFall{
+      0%{transform:translateY(-120px) rotate(0deg) translateX(0px); opacity:1;}
+      25%{transform:translateY(25vh) rotate(180deg) translateX(20px); opacity:0.8;}
+      50%{transform:translateY(50vh) rotate(360deg) translateX(-15px); opacity:0.6;}
+      75%{transform:translateY(75vh) rotate(540deg) translateX(10px); opacity:0.4;}
+      100%{transform:translateY(120vh) rotate(720deg) translateX(-5px); opacity:0;}
+    }
+    
+    /* Profile Modal Styles */
+    .profile-overlay{
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:35;
+      background:rgba(0,0,0,0.7);
+    }
+    .profile-overlay.show{display:flex;}
+    .profile-card{
+      width:min(600px, 90vw); max-height:80vh; overflow-y:auto;
+      background:linear-gradient(180deg, #0f141f, #0b1019);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px; padding:24px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    }
+    .profile-header{
+      text-align:center; margin-bottom:20px;
+    }
+    .profile-avatar{
+      width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, #667eea, #764ba2);
+      display:flex; align-items:center; justify-content:center;
+      font-size:32px; margin:0 auto 12px; box-shadow:0 8px 20px rgba(0,0,0,.3);
+    }
+    .profile-name{font-size:24px; font-weight:800; margin-bottom:4px;}
+    .profile-stats{
+      display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:12px; margin:20px 0;
+    }
+    .stat-card{
+      background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+      border-radius:12px; padding:16px; text-align:center;
+    }
+    .stat-number{font-size:28px; font-weight:800; color:var(--accent);}
+    .stat-label{font-size:12px; color:var(--muted); margin-top:4px;}
+    .badge-grid{
+      display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-top:16px;
+    }
+    .badge-card{
+      background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+      border-radius:12px; padding:16px; text-align:center; position:relative;
+    }
+    .badge-card.earned{
+      border-color:rgba(46,255,170,0.3); background:rgba(46,255,170,0.05);
+    }
+    .badge-card.earned .badge-emoji{
+      filter:drop-shadow(0 4px 12px rgba(46,255,170,.3));
+    }
+    .badge-emoji{font-size:32px; margin-bottom:8px;}
+    .badge-title{font-weight:700; font-size:14px; margin-bottom:4px;}
+    .badge-subtitle{font-size:12px; color:var(--muted);}
+    .badge-locked{
+      opacity:0.4; filter:grayscale(0.8);
+    }
+    .clickable{cursor:pointer; transition:all 0.2s ease;}
+    .clickable:hover{transform:translateY(-2px); opacity:0.8;}
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header>
+      <div class="header-top">
+        <div class="header-info">
+          <div class="phase-badge" id="phaseBadge">Study Mode</div>
+          <div class="level-chip" id="levelChip">
+            <span class="dot" id="levelDot" style="background:#ef4444"></span>
+            <span id="levelName">Red</span>
+          </div>
+          <div class="student clickable" id="studentNameLabel"></div>
+        </div>
+        <div class="badge-row" id="badgeRow" title="Badges you've earned"></div>
+      </div>
+      <div class="controls">
+        <button id="reviewModeBtn" title="Toggle between Current Level Focus and General Review">Review Mode</button>
+        <button id="changeLevelBtn" title="Pick a different level">Level</button>
+        <button id="resetLevelBtn" title="Reset this level's progress">Reset Level</button>
+        <button id="resetAllBtn" class="ghost" title="Reset ALL progress">Reset All</button>
+      </div>
+    </header>
+
+    <main class="word-area">
+      <div class="word" id="wordDisplay">Loading…</div>
+
+      <div class="tapzones">
+        <div class="zone zone-left" id="zoneWrong" aria-label="Missed it (Left)">
+          <div class="zone-label">Missed it</div>
+        </div>
+        <div class="zone zone-right" id="zoneRight" aria-label="Got it right (Right)">
+          <div class="zone-label">Got it!</div>
+        </div>
+      </div>
+
+      <div class="tip">Tap left/right • Keys: <b>W</b>=wrong, <b>R</b>=right</div>
+    </main>
+
+    <footer>
+      <div class="progress">
+        <div class="bar-wrap">
+          <div class="bar-label">Mastery</div>
+          <div class="bar" title="Mastery across the set"><span id="barMastery"></span></div>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-label">Final Review</div>
+          <div class="bar" title="Final review progress"><span id="barFinal"></span></div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="pill" id="statLearned">Learned: 0</div>
+        <div class="pill" id="statRemaining">Remaining: 0</div>
+        <div class="pill" id="statSeen">Seen: 0</div>
+        <div class="pill" id="statTricky">Tricky in play: 0</div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Welcome / Student name and practice mode -->
+  <div class="overlay" id="welcomeOverlay" role="dialog" aria-modal="true">
+    <div class="card">
+      <h2>Welcome!</h2>
+      <div class="muted">Who's practicing today?</div>
+      <div style="margin-top:8px">
+        <input id="studentNameInput" type="text" placeholder="Type student name…" />
+      </div>
+      <div style="margin-top:16px">
+        <div class="muted">What would you like to practice?</div>
+        <div style="margin-top:8px; display:flex; gap:8px; flex-direction:column;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="radio" name="practiceMode" value="current" checked style="margin:0;">
+            <span>Continue working on my current level</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="radio" name="practiceMode" value="general" style="margin:0;">
+            <span>Practice all words I've learned so far</span>
+          </label>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="saveStudentBtn">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Level picker (shown AFTER name is saved) -->
+  <div class="overlay" id="levelOverlay" role="dialog" aria-modal="true">
+    <div class="card">
+      <h2>What level are you on?</h2>
+      <div class="muted">Pick your color. You can change this anytime.</div>
+      <div class="level-grid" id="levelGrid"></div>
+      <div class="btn-row">
+        <button id="closeLevelBtn" class="ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- "Ready for review?" modal -->
+  <div class="overlay" id="preFinalOverlay" role="dialog" aria-modal="true">
+    <div class="card">
+      <div class="fun-wrap">
+        <div class="fun-emoji">🧠✨</div>
+        <div>
+          <h2>Looks like you've got these words!</h2>
+          <div class="muted">Let's do a quick review to make sure you really know them, then you can earn your <b id="badgeName">Red</b> badge!</div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div class="muted">The review shows each word twice in random order. Get them all right to unlock the test!</div>
+      </div>
+      <div class="btn-row">
+        <button id="startReviewBtn">Start Review</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test results / review -->
+  <div class="overlay" id="testResultOverlay" role="dialog" aria-modal="true">
+    <div class="card" id="testResultCard">
+      <h2 id="testResultTitle">Test Finished</h2>
+      <div class="muted" id="testResultSub">Score: 0%</div>
+      <div id="missedList" class="muted" style="margin-top:8px"></div>
+      <div class="btn-row" id="testButtons">
+        <button id="startQuickReviewBtn">Quick Review</button>
+        <button id="retestBtn" class="ghost" disabled>Retest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Badge Celebration Animation -->
+  <div class="badge-celebration" id="badgeCelebration">
+    <div class="confetti-container" id="confettiContainer"></div>
+    <div class="badge-burst">
+      <span class="emoji-badge" id="celebrationBadge">🏅</span>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div class="profile-overlay" id="profileOverlay" role="dialog" aria-modal="true">
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="profile-avatar">👤</div>
+        <div class="profile-name" id="profileName">Student</div>
+        <div class="muted">Sight Words Champion</div>
+      </div>
+      
+      <div class="profile-stats">
+        <div class="stat-card">
+          <div class="stat-number" id="totalWordsMastered">0</div>
+          <div class="stat-label">Words Mastered</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalBadgesEarned">0</div>
+          <div class="stat-label">Badges Earned</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalWordsSeen">0</div>
+          <div class="stat-label">Words Seen</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="completionRate">0%</div>
+          <div class="stat-label">Completion</div>
+        </div>
+      </div>
+
+      <h3 style="margin:20px 0 12px 0; font-size:18px;">Badge Collection</h3>
+      <div class="badge-grid" id="profileBadgeGrid"></div>
+      
+      <div class="btn-row" style="margin-top:20px">
+        <button id="closeProfileBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success overlay -->
+  <div class="success" id="success">
+    <div class="success-card">
+      <svg class="trophy" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#5ff3b1"/><stop offset="100%" stop-color="#2d6fea"/></linearGradient></defs>
+        <path fill="url(#g)" d="M216 40h-32V24a8 8 0 0 0-8-8H80a8 8 0 0 0-8 8v16H40a8 8 0 0 0-8 8v24c0 28.6 20.7 52.5 48 58.3A72.2 72.2 0 0 0 120 176v16H88a8 8 0 1 0 0 16h80a8 8 0 1 0 0-16h-32v-16a72.2 72.2 0 0 0 40-45.7c27.3-5.8 48-29.7 48-58.3V48a8 8 0 0 0-8-8Zm-168 32V56h24v37.9C59.1 90.5 48 77.1 48 72Zm160 0c0 5.1-11.1 18.5-24 21.9V56h24v16Z"/>
+      </svg>
+      <h2 id="successTitle">Level Mastered!</h2>
+      <p id="successText">You got 100% on the test. Badge earned! 🎉</p>
+      <div class="row center" style="gap:12px; margin-bottom:10px">
+        <span class="emoji-badge" id="earnedBadge">🏅</span>
+        <span class="pill">Badge added to your belt</span>
+      </div>
+      <div class="btn-row">
+        <button id="reviewAgainBtn">Review again</button>
+        <button class="ghost" id="pickNextLevelBtn">Pick another level</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    const STORAGE_KEY = 'sightwords_rainbow_v3';
+
+    // ==== YOUR RAINBOW LEVELS ====
+    const LEVELS = [
+      { name:'Red', color:'#ef4444', badge:'🍓', words:[
+        "I","said","the","was","a","me","is","my","and","we","see","go"
+      ]},
+      { name:'Orange', color:'#f97316', badge:'🍊', words:[
+        "big","for","am","in","play","one","two","you","to","do","get","red","it"
+      ]},
+      { name:'Yellow', color:'#eab308', badge:'🐤', words:[
+        "are","at","be","can","blue","not","run","up","three","his","sees","he","she"
+      ]},
+      { name:'Green', color:'#22c55e', badge:'🍀', words:[
+        "as","has","come","find","help","all","what","went","wasn't","isn't","hasn't","little","yellow"
+      ]},
+      { name:'Blue', color:'#3b82f6', badge:'💧', words:[
+        "away","funny","here","down","jump","make","look","could","should","would","black","this","that"
+      ]},
+      { name:'Purple', color:'#a855f7', badge:'🔮', words:[
+        "ate","brown","but","came","did","four","good","have","like","on","will","where","ran"
+      ]},
+      { name:'Pink', color:'#ec4899', badge:'🦄', words:[
+        "work","eat","no","yes","into","with","say","so","white","please","new","want","pretty"
+      ]},
+      { name:'Light Blue', color:'#38bdf8', badge:'☁️', words:[
+        "must","now","our","ride","saw","soon","out","there","they","too","under","well","who"
+      ]},
+    ];
+    // ==============================
+
+    // Mastery & tricky rules (per your notes)
+    const TRICKY_ADD_AFTER_WRONGS = 2;      // 2 total misses → tricky
+    const TRICKY_REMOVE_AFTER_STREAK = 5;   // 5 in a row → remove tricky
+
+    // Weighting and spacing
+    const WRONG_FACTOR = 4;
+    const MIN_WEIGHT = 1;
+    const HISTORY_BLOCK = 3;                // avoid showing any of last N words
+    // Removed fixed percentages - now using unified weighted pool system
+
+    // Quick review rules after a test fail
+    const REVIEW_MISSED_MULTIPLIER = 3; // each missed word appears 3× in review
+    
+    // Learning science improvements
+    const REVIEW_THRESHOLD_DAYS = 2;    // words not seen in 2+ days get priority
+    const RETRY_DELAY = 3;              // show 3 other words before retry
+    const MASTERY_STREAK_REQUIRED = 3;  // require 3 correct in a row
+    const MASTERY_SESSIONS_REQUIRED = 1; // require 1 session (more reasonable for single study session)
+    const MASTERY_TIME_SPAN_DAYS = 0;   // require 0 days (allow same-day mastery)
+    const MASTERED_STREAK = MASTERY_STREAK_REQUIRED; // Now uses enhanced mastery requirements
+
+    // State model
+    // perLevel.words: { text, seen, correct, wrong, streak, mastered:boolean, tricky:boolean, lastSeenTimestamp:Date, masteryDates:Date[], sessionsSeen:number }
+    let state = loadState() || makeFreshState();
+
+    // Runtime
+    let levelIdx = state.levelIdx ?? 0;
+    let currentIndex = -1;
+    let phase = state.phase || 'study'; // 'study' | 'prefinal' | 'review' | 'final' | 'postreview'
+    let finalQueue = state.finalQueue || [];
+    let finalPosition = state.finalPosition || 0;
+    let seenTotal = state.seenTotal || 0;
+
+    let firstPassQueue = state.firstPassQueue || []; // all words once before repeats
+    let history = state.history || [];               // recent indices to avoid repeats
+
+    let testResults = state.testResults || [];       // {idx, correct}
+    let missedFromTest = state.missedFromTest || [];
+    let reviewQueue = state.reviewQueue || [];
+    let missedFromReview = [];
+    
+    // Review session variables
+    let reviewSessionQueue = state.reviewSessionQueue || [];
+    let reviewSessionPosition = state.reviewSessionPosition || 0;
+    let reviewSessionResults = state.reviewSessionResults || [];
+
+    let studentName = state.studentName || '';
+    let cooldownNextKnown = state.cooldownNextKnown || 0; // after a miss, force next to known
+    let reviewMode = state.reviewMode || 'current'; // 'current' or 'general'
+    
+    // Learning science additions
+    function generateSessionId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+    
+    let currentSessionId = state.currentSessionId || generateSessionId();
+    let retryQueue = state.retryQueue || []; // [{wordIdx, attemptsLeft}]
+    
+    // Cross-level review system (now integrated into unified pool)
+
+    const els = {
+      phaseBadge: document.getElementById('phaseBadge'),
+      word: document.getElementById('wordDisplay'),
+      zoneRight: document.getElementById('zoneRight'),
+      zoneWrong: document.getElementById('zoneWrong'),
+      barMastery: document.getElementById('barMastery'),
+      barFinal: document.getElementById('barFinal'),
+      statLearned: document.getElementById('statLearned'),
+      statRemaining: document.getElementById('statRemaining'),
+      statSeen: document.getElementById('statSeen'),
+      statTricky: document.getElementById('statTricky'),
+      success: document.getElementById('success'),
+      reviewAgainBtn: document.getElementById('reviewAgainBtn'),
+      pickNextLevelBtn: document.getElementById('pickNextLevelBtn'),
+      changeLevelBtn: document.getElementById('changeLevelBtn'),
+      resetLevelBtn: document.getElementById('resetLevelBtn'),
+      resetAllBtn: document.getElementById('resetAllBtn'),
+      levelOverlay: document.getElementById('levelOverlay'),
+      levelGrid: document.getElementById('levelGrid'),
+      closeLevelBtn: document.getElementById('closeLevelBtn'),
+      levelDot: document.getElementById('levelDot'),
+      levelName: document.getElementById('levelName'),
+      badgeRow: document.getElementById('badgeRow'),
+      badgeName: document.getElementById('badgeName'),
+      successTitle: document.getElementById('successTitle'),
+      successText: document.getElementById('successText'),
+      earnedBadge: document.getElementById('earnedBadge'),
+      preFinalOverlay: document.getElementById('preFinalOverlay'),
+      notYetBtn: document.getElementById('notYetBtn'),
+      startFinalBtn: document.getElementById('startFinalBtn'),
+      testResultOverlay: document.getElementById('testResultOverlay'),
+      testResultTitle: document.getElementById('testResultTitle'),
+      testResultSub: document.getElementById('testResultSub'),
+      missedList: document.getElementById('missedList'),
+      startQuickReviewBtn: document.getElementById('startQuickReviewBtn'),
+      retestBtn: document.getElementById('retestBtn'),
+      welcomeOverlay: document.getElementById('welcomeOverlay'),
+      studentNameInput: document.getElementById('studentNameInput'),
+      saveStudentBtn: document.getElementById('saveStudentBtn'),
+      studentNameLabel: document.getElementById('studentNameLabel'),
+      // New elements
+      badgeCelebration: document.getElementById('badgeCelebration'),
+      celebrationBadge: document.getElementById('celebrationBadge'),
+      confettiContainer: document.getElementById('confettiContainer'),
+      profileOverlay: document.getElementById('profileOverlay'),
+      profileName: document.getElementById('profileName'),
+      totalWordsMastered: document.getElementById('totalWordsMastered'),
+      totalBadgesEarned: document.getElementById('totalBadgesEarned'),
+      totalWordsSeen: document.getElementById('totalWordsSeen'),
+      completionRate: document.getElementById('completionRate'),
+      profileBadgeGrid: document.getElementById('profileBadgeGrid'),
+      closeProfileBtn: document.getElementById('closeProfileBtn'),
+      reviewModeBtn: document.getElementById('reviewModeBtn'),
+    };
+
+    // ======= STATE HELPERS =======
+    function makeFreshState(){
+      return {
+        perLevel: LEVELS.map(lvl => ({
+          words: (lvl.words || []).map(w => ({
+            text: w, seen:0, correct:0, wrong:0, streak:0, mastered:false, tricky:false,
+            lastSeenTimestamp: null, masteryDates: [], sessionsSeen: 0, currentSessionSeen: false
+          })),
+          badgeEarned: false
+        })),
+        levelIdx: 0,
+        phase: 'study',
+        finalQueue: [],
+        finalPosition: 0,
+        seenTotal: 0,
+        firstPassQueue: [],
+        history: [],
+        testResults: [],
+        missedFromTest: [],
+        reviewQueue: [],
+        studentName: '',
+        cooldownNextKnown: 0,
+        currentSessionId: generateSessionId(),
+        retryQueue: [],
+        reviewMode: 'current',
+        reviewSessionQueue: [],
+        reviewSessionPosition: 0,
+        reviewSessionResults: [],
+      };
+    }
+
+    function saveState(){
+      state.levelIdx = levelIdx;
+      state.phase = phase;
+      state.finalQueue = finalQueue;
+      state.finalPosition = finalPosition;
+      state.seenTotal = seenTotal;
+      state.firstPassQueue = firstPassQueue;
+      state.history = history;
+      state.testResults = testResults;
+      state.missedFromTest = missedFromTest;
+      state.reviewQueue = reviewQueue;
+      state.reviewSessionQueue = reviewSessionQueue;
+      state.reviewSessionPosition = reviewSessionPosition;
+      state.reviewSessionResults = reviewSessionResults;
+      state.studentName = studentName;
+      state.cooldownNextKnown = cooldownNextKnown;
+      state.currentSessionId = currentSessionId;
+      state.retryQueue = retryQueue;
+      state.reviewMode = reviewMode;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+    }
+
+    function loadState(){
+      try{
+        const s = localStorage.getItem(STORAGE_KEY);
+        if(!s) return null;
+        const parsed = JSON.parse(s);
+        if(!parsed.perLevel || !Array.isArray(parsed.perLevel)) return null;
+        // If LEVELS length changed, migrate conservatively
+        if (parsed.perLevel.length !== LEVELS.length){
+          const fresh = makeFreshState();
+          const n = Math.min(parsed.perLevel.length, fresh.perLevel.length);
+          for(let i=0;i<n;i++){ fresh.perLevel[i] = parsed.perLevel[i]; }
+          fresh.levelIdx = Math.min(parsed.levelIdx || 0, LEVELS.length-1);
+          fresh.phase = parsed.phase || 'study';
+          fresh.finalQueue = parsed.finalQueue || [];
+          fresh.finalPosition = parsed.finalPosition || 0;
+          fresh.seenTotal = parsed.seenTotal || 0;
+          fresh.firstPassQueue = parsed.firstPassQueue || [];
+          fresh.history = parsed.history || [];
+          fresh.testResults = parsed.testResults || [];
+          fresh.missedFromTest = parsed.missedFromTest || [];
+          fresh.reviewQueue = parsed.reviewQueue || [];
+          fresh.studentName = parsed.studentName || '';
+          fresh.cooldownNextKnown = parsed.cooldownNextKnown || 0;
+          fresh.currentSessionId = parsed.currentSessionId || generateSessionId();
+          fresh.retryQueue = parsed.retryQueue || [];
+          fresh.reviewMode = parsed.reviewMode || 'current';
+          fresh.reviewSessionQueue = parsed.reviewSessionQueue || [];
+          fresh.reviewSessionPosition = parsed.reviewSessionPosition || 0;
+          fresh.reviewSessionResults = parsed.reviewSessionResults || [];
+          return fresh;
+        }
+        return parsed;
+      }catch(e){ return null; }
+    }
+
+    function currentLevel(){ return state.perLevel[levelIdx]; }
+    function words(){ return currentLevel().words; }
+    function allMasteredInLevel(){
+      const w = words();
+      if (!w.length) return false;
+      // Allow test if all words are mastered OR if at least 80% are mastered
+      const masteredCount = w.filter(x => x.mastered).length;
+      return masteredCount === w.length || masteredCount >= Math.ceil(w.length * 0.8);
+    }
+    function masteredCount(){ return words().filter(w=>w.mastered).length; }
+
+    // ======= LEARNING SCIENCE UTILITIES =======
+    function getDaysSince(timestamp) {
+      if (!timestamp) return 999; // Never seen = high priority
+      const now = new Date();
+      const diffTime = Math.abs(now - new Date(timestamp));
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+    
+    function getDaysBetween(date1, date2) {
+      const diffTime = Math.abs(new Date(date2) - new Date(date1));
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+    
+    function checkMastery(word) {
+      // Handle backward compatibility for new fields
+      const streak = word.streak || 0;
+      const sessionsSeen = word.sessionsSeen || 0;
+      const masteryDates = word.masteryDates || [];
+      
+      // Require minimum streak
+      if (streak < MASTERY_STREAK_REQUIRED) return false;
+      
+      // Require multiple sessions
+      if (sessionsSeen < MASTERY_SESSIONS_REQUIRED) return false;
+      
+      // Require time span between first and last correct
+      if (masteryDates.length < MASTERY_STREAK_REQUIRED) return false;
+      const daySpan = getDaysBetween(
+        masteryDates[0], 
+        masteryDates[masteryDates.length - 1]
+      );
+      if (daySpan < MASTERY_TIME_SPAN_DAYS) return false;
+      
+      word.mastered = true;
+      return true;
+    }
+    
+    function onWordShown(wordIdx) {
+      const word = words()[wordIdx];
+      
+      // Initialize new fields if they don't exist (for backward compatibility)
+      if (!word.hasOwnProperty('lastSeenTimestamp')) word.lastSeenTimestamp = null;
+      if (!word.hasOwnProperty('masteryDates')) word.masteryDates = [];
+      if (!word.hasOwnProperty('sessionsSeen')) word.sessionsSeen = 0;
+      if (!word.hasOwnProperty('currentSessionSeen')) word.currentSessionSeen = false;
+      
+      word.lastSeenTimestamp = new Date();
+      
+      // Track sessions
+      if (!word.currentSessionSeen) {
+        word.sessionsSeen = (word.sessionsSeen || 0) + 1;
+        word.currentSessionSeen = true;
+      }
+    }
+    
+    function endSession() {
+      words().forEach(w => w.currentSessionSeen = false);
+    }
+    
+    // Cross-level review functions (now integrated into unified pool system)
+    
+    function getAllWordsForSelection() {
+      const allWords = [];
+      
+      // Add current level words
+      words().forEach((word, idx) => {
+        allWords.push({
+          word: word,
+          levelIdx: levelIdx,
+          wordIdx: idx,
+          isFromPreviousLevel: false
+        });
+      });
+      
+      // Add previous level words (only for levels after Red)
+      if (levelIdx > 0) {
+        for (let prevLevel = 0; prevLevel < levelIdx; prevLevel++) {
+          const prevWords = state.perLevel[prevLevel].words;
+          prevWords.forEach((word, wordIdx) => {
+            const daysSince = getDaysSince(word.lastSeenTimestamp);
+            
+            if (reviewMode === 'current') {
+              // Current level focus: only include words that are truly due for review
+              if (daysSince >= 5 || (word.tricky && daysSince >= 2)) {
+                allWords.push({
+                  word: word,
+                  levelIdx: prevLevel,
+                  wordIdx: wordIdx,
+                  isFromPreviousLevel: true
+                });
+              }
+            } else {
+              // General review: include more previous level words for retention
+              if (daysSince >= 3 || word.tricky) {
+                allWords.push({
+                  word: word,
+                  levelIdx: prevLevel,
+                  wordIdx: wordIdx,
+                  isFromPreviousLevel: true
+                });
+              }
+            }
+          });
+        }
+      }
+      
+      return allWords;
+    }
+    
+    function getCriticalWords() {
+      const criticalWords = [];
+      
+      // Check current level
+      words().forEach((word, idx) => {
+        const daysSince = getDaysSince(word.lastSeenTimestamp);
+        if (daysSince >= 7 && !word.mastered) {
+          criticalWords.push({
+            word: word,
+            levelIdx: levelIdx,
+            wordIdx: idx,
+            isFromPreviousLevel: false
+          });
+        }
+      });
+      
+      // Check previous levels (only for levels after Red)
+      if (levelIdx > 0) {
+        for (let prevLevel = 0; prevLevel < levelIdx; prevLevel++) {
+          const prevWords = state.perLevel[prevLevel].words;
+          prevWords.forEach((word, wordIdx) => {
+            const daysSince = getDaysSince(word.lastSeenTimestamp);
+            if (daysSince >= 7 && !word.mastered) {
+              criticalWords.push({
+                word: word,
+                levelIdx: prevLevel,
+                wordIdx: wordIdx,
+                isFromPreviousLevel: true
+              });
+            }
+          });
+        }
+      }
+      
+      return criticalWords;
+    }
+    
+    function pickFromUnifiedPool() {
+      // TIER 1: Critical reviews (always prioritize words not seen in 7+ days)
+      const criticalWords = getCriticalWords();
+      if (criticalWords.length > 0) {
+        // Filter out words in history
+        let pool = criticalWords.filter(w => !history.includes(w.wordIdx));
+        if (pool.length === 0) pool = criticalWords;
+        
+        // Calculate weights for critical words
+        let totalWeight = 0;
+        const weights = pool.map(w => {
+          const weight = computeWeight(w.word, w.isFromPreviousLevel);
+          totalWeight += weight;
+          return weight;
+        });
+        
+        // Pick weighted random from critical words
+        let random = Math.random() * totalWeight;
+        for (let i = 0; i < pool.length; i++) {
+          random -= weights[i];
+          if (random <= 0) {
+            return pool[i];
+          }
+        }
+        return pool[pool.length - 1];
+      }
+      
+      // TIER 2: Regular weighted selection from all available words
+      const allWords = getAllWordsForSelection();
+      if (allWords.length === 0) return null;
+      
+      // Filter out words in history (unless pool is too small)
+      let pool = allWords.filter(w => !history.includes(w.wordIdx) || allWords.length <= HISTORY_BLOCK);
+      if (pool.length === 0) pool = allWords;
+      
+      // Calculate weights
+      let totalWeight = 0;
+      const weights = pool.map(w => {
+        const weight = computeWeight(w.word, w.isFromPreviousLevel);
+        totalWeight += weight;
+        return weight;
+      });
+      
+      // Pick weighted random
+      let random = Math.random() * totalWeight;
+      for (let i = 0; i < pool.length; i++) {
+        random -= weights[i];
+        if (random <= 0) {
+          return pool[i];
+        }
+      }
+      
+      // Fallback
+      return pool[pool.length - 1];
+    }
+
+    // ======= UI =======
+    function updateHeader(){
+      const lvl = LEVELS[levelIdx];
+      els.levelDot.style.background = lvl.color;
+      els.levelName.textContent = lvl.name;
+      els.studentNameLabel.textContent = studentName ? `👤 ${studentName}` : '';
+    }
+    
+    function showBadgeCelebration(badgeEmoji){
+      // Clear any existing confetti
+      els.confettiContainer.innerHTML = '';
+      
+      // Create confetti pieces
+      const confettiColors = [
+        '#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', 
+        '#fd79a8', '#00b894', '#e17055', '#74b9ff', '#fdcb6e', 
+        '#e84393', '#00cec9', '#a29bfe', '#ff7675'
+      ];
+      
+      for(let i = 0; i < 120; i++){ // Tripled from 40 to 120
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti-piece';
+        confetti.style.background = confettiColors[i % confettiColors.length];
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.animationDelay = Math.random() * 2 + 's';
+        confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+        els.confettiContainer.appendChild(confetti);
+      }
+      
+      els.celebrationBadge.textContent = badgeEmoji;
+      els.badgeCelebration.classList.add('show');
+    }
+    
+    function hideBadgeCelebration(){
+      els.badgeCelebration.classList.remove('show');
+      // Clear confetti after animation
+      setTimeout(() => {
+        els.confettiContainer.innerHTML = '';
+      }, 100);
+    }
+    
+    function calculateTotalStats(){
+      let totalMastered = 0;
+      let totalBadges = 0;
+      let totalWords = 0;
+      
+      state.perLevel.forEach(level => {
+        totalMastered += level.words.filter(w => w.mastered).length;
+        totalWords += level.words.length;
+        if (level.badgeEarned) totalBadges++;
+      });
+      
+      const completion = totalWords > 0 ? Math.round((totalMastered / totalWords) * 100) : 0;
+      
+      return { totalMastered, totalBadges, totalWords, completion, totalSeen: seenTotal };
+    }
+    
+    function updateProfileStats(){
+      const stats = calculateTotalStats();
+      els.totalWordsMastered.textContent = stats.totalMastered;
+      els.totalBadgesEarned.textContent = stats.totalBadges;
+      els.totalWordsSeen.textContent = stats.totalSeen;
+      els.completionRate.textContent = stats.completion + '%';
+    }
+    
+    function populateProfileBadges(){
+      els.profileBadgeGrid.innerHTML = '';
+      LEVELS.forEach((lvl, i) => {
+        const levelData = state.perLevel[i];
+        const isEarned = levelData.badgeEarned;
+        const masteredCount = levelData.words.filter(w => w.mastered).length;
+        const totalCount = levelData.words.length;
+        
+        const card = document.createElement('div');
+        card.className = `badge-card ${isEarned ? 'earned' : 'badge-locked'}`;
+        card.innerHTML = `
+          <div class="badge-emoji">${lvl.badge}</div>
+          <div class="badge-title">${lvl.name}</div>
+          <div class="badge-subtitle">${masteredCount}/${totalCount} words</div>
+        `;
+        els.profileBadgeGrid.appendChild(card);
+      });
+    }
+    
+    function openProfile(){
+      els.profileName.textContent = studentName || 'Student';
+      updateProfileStats();
+      populateProfileBadges();
+      els.profileOverlay.classList.add('show');
+    }
+    
+    function closeProfile(){
+      els.profileOverlay.classList.remove('show');
+    }
+    function updateBadges(){
+      els.badgeRow.innerHTML = '';
+      state.perLevel.forEach((lv, i)=>{
+        if (lv.badgeEarned){
+          const span = document.createElement('span');
+          span.className = 'emoji-badge';
+          span.textContent = LEVELS[i].badge || '🏅';
+          span.title = LEVELS[i].name + ' badge';
+          els.badgeRow.appendChild(span);
+        }
+      });
+    }
+    function updatePhaseBadge(){
+      if (phase === 'study'){
+        els.phaseBadge.textContent = 'Study Mode';
+        els.phaseBadge.style.background = 'rgba(110,168,254,0.12)';
+        els.phaseBadge.style.color = 'var(--accent)';
+        els.phaseBadge.style.borderColor = 'rgba(110,168,254,0.3)';
+      } else if (phase === 'review'){
+        els.phaseBadge.textContent = 'Review Session';
+        els.phaseBadge.style.background = 'rgba(250,204,21,0.15)';
+        els.phaseBadge.style.color = '#fde68a';
+        els.phaseBadge.style.borderColor = 'rgba(253,230,138,0.35)';
+      } else if (phase === 'final'){
+        els.phaseBadge.textContent = 'Final Test';
+        els.phaseBadge.style.background = 'rgba(46,255,170,0.12)';
+        els.phaseBadge.style.color = 'var(--success)';
+        els.phaseBadge.style.borderColor = 'rgba(46,255,170,0.3)';
+      } else if (phase === 'postreview'){
+        els.phaseBadge.textContent = 'Quick Review';
+        els.phaseBadge.style.background = 'rgba(250,204,21,0.15)';
+        els.phaseBadge.style.color = '#fde68a';
+        els.phaseBadge.style.borderColor = 'rgba(253,230,138,0.35)';
+      } else {
+        els.phaseBadge.textContent = 'Get Ready…';
+      }
+    }
+    
+    function updateReviewModeButton(){
+      if (reviewMode === 'current') {
+        els.reviewModeBtn.textContent = 'Switch to All Known Words';
+        els.reviewModeBtn.title = 'Switch to practice all words you\'ve learned so far';
+      } else {
+        els.reviewModeBtn.textContent = 'Switch to Current Level';
+        els.reviewModeBtn.title = 'Switch to focus on your current level only';
+      }
+    }
+    function updateProgressBars(){
+      const total = Math.max(1, words().length);
+      const learned = masteredCount();
+      els.barMastery.style.width = ((learned/total)*100).toFixed(2) + '%';
+
+      let pct = 0;
+      if (phase === 'review' && reviewSessionQueue.length > 0){
+        pct = (reviewSessionPosition / reviewSessionQueue.length) * 100;
+      } else if (phase === 'final' && finalQueue.length > 0){
+        pct = (finalPosition / finalQueue.length) * 100;
+      } else if (phase === 'postreview' && reviewQueue.length > 0){
+        pct = (1 - (reviewQueue.length / reviewQueue._initialLen)) * 100;
+      }
+      els.barFinal.style.width = pct.toFixed(2) + '%';
+
+      els.statLearned.textContent = `Learned: ${learned}`;
+      els.statRemaining.textContent = `Remaining: ${Math.max(0, total - learned)}`;
+      els.statSeen.textContent = `Seen: ${seenTotal}`;
+      els.statTricky.textContent = `Tricky in play: ${words().filter(w=>w.tricky).length}`;
+    }
+    function setWord(text){
+      els.word.textContent = text;
+      updateProgressBars();
+    }
+
+    // ======= PICKING =======
+    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
+    
+    function computeWeight(w, isFromPreviousLevel = false){ 
+      // Handle backward compatibility for new fields
+      const lastSeen = w.lastSeenTimestamp || null;
+      const daysSinceLastSeen = getDaysSince(lastSeen);
+      
+      // Base weight calculation
+      let base = 1 + (w.wrong || 0) * WRONG_FACTOR - (w.streak || 0);
+      
+      if (reviewMode === 'current') {
+        // CURRENT LEVEL FOCUS: Prioritize current level for school testing
+        if (!isFromPreviousLevel) {
+          // Current level: much stronger priority for school tests
+          base += 5; // Base boost for current level words
+          const timeBoost = Math.min(daysSinceLastSeen * 0.8, 10);
+          base += timeBoost;
+          if (w.tricky) base += 3; // Higher tricky boost for current level
+        } else {
+          // Previous level: much smaller boosts to keep focus on current level
+          const timeBoost = Math.min(daysSinceLastSeen * 0.3, 4);
+          base += timeBoost;
+          if (w.tricky) base += 1; // Smaller tricky boost for previous level
+        }
+      } else {
+        // GENERAL REVIEW: Balanced approach for long-term retention
+        if (!isFromPreviousLevel) {
+          // Current level: normal priority
+          const timeBoost = Math.min(daysSinceLastSeen * 0.5, 5);
+          base += timeBoost;
+          if (w.tricky) base += 2;
+        } else {
+          // Previous level: stronger priority to prevent forgetting
+          const timeBoost = Math.min(daysSinceLastSeen * 1.0, 8);
+          base += timeBoost;
+          if (w.tricky) base += 2;
+          if (!w.mastered) base += 2; // Extra boost for non-mastered previous words
+        }
+      }
+      
+      return Math.max(MIN_WEIGHT, base); 
+    }
+    
+    // Removed trickyRatio function - now using unified weight system
+
+    function pickWeightedIndex(indices){
+      const ws = words();
+      let pool = indices.filter(i => !history.includes(i) || indices.length <= HISTORY_BLOCK);
+      if (!pool.length) pool = indices.slice();
+      let total = 0;
+      const weights = pool.map(i=>{ const w=computeWeight(ws[i]); total+=w; return w; });
+      let r = Math.random()*total;
+      for (let k=0;k<pool.length;k++){ r -= weights[k]; if (r<=0) return pool[k]; }
+      return pool[pool.length-1];
+    }
+
+    function ensureFirstPass(){
+      if (!firstPassQueue.length){
+        firstPassQueue = shuffle(words().map((_,i)=>i));
+      }
+    }
+    function pushHistory(idx){
+      history.push(idx);
+      if (history.length > HISTORY_BLOCK) history.shift();
+    }
+
+    function nextWord(){
+      if (!words().length){ setWord('No words in this level.'); return; }
+
+      if (phase === 'study'){
+        // Cross-level review is now handled by unified pool system
+        // If all mastered → prefinal
+        if (allMasteredInLevel()){
+          phase = 'prefinal';
+          updatePhaseBadge();
+          openPreFinal();
+          saveState();
+          return;
+        }
+
+        // First pass: every word once before any repeats
+        ensureFirstPass();
+        if (firstPassQueue.length){
+          const idx = firstPassQueue.shift();
+          currentIndex = idx; pushHistory(idx);
+          onWordShown(idx);
+          setWord(words()[idx].text);
+          saveState(); return;
+        }
+
+        // NEW: Priority for words not seen in 2+ days
+        const dueForReview = words()
+          .map((w, i) => {
+            const lastSeen = w.lastSeenTimestamp || null;
+            const days = getDaysSince(lastSeen);
+            return (days >= REVIEW_THRESHOLD_DAYS && !w.mastered) ? i : -1;
+          })
+          .filter(i => i >= 0);
+          
+        if (dueForReview.length) {
+          const idx = pickWeightedIndex(dueForReview);
+          currentIndex = idx; pushHistory(idx);
+          onWordShown(idx);
+          setWord(words()[idx].text);
+          saveState(); return;
+        }
+
+        // NEW: Check retry queue before cooldown
+        if (retryQueue.length > 0) {
+          const retry = retryQueue[0];
+          if (retry.attemptsLeft <= 0) {
+            retryQueue.shift();
+            currentIndex = retry.wordIdx;
+            pushHistory(retry.wordIdx);
+            onWordShown(retry.wordIdx);
+            setWord(words()[retry.wordIdx].text);
+            saveState(); return;
+          }
+        }
+
+        // After a miss, force one known word (streak >= 2) before another tricky/unknown
+        if (cooldownNextKnown > 0){
+          const known = words().map((w,i)=> (w.streak>=2 ? i : -1)).filter(i=>i>=0);
+          if (known.length){
+            const idx = pickWeightedIndex(known);
+            currentIndex = idx; pushHistory(idx);
+            onWordShown(idx);
+            setWord(words()[idx].text);
+            cooldownNextKnown = 0;
+            
+            // Decrement retry counter
+            if (retryQueue.length > 0) {
+              retryQueue[0].attemptsLeft--;
+            }
+            
+            saveState(); return;
+          }
+          // if no known available, fall through
+          cooldownNextKnown = 0;
+        }
+
+        // Use unified weighted pool system (replaces all the old percentage-based logic)
+        const selectedWord = pickFromUnifiedPool();
+        if (selectedWord) {
+          // Handle cross-level words with special index format
+          if (selectedWord.isFromPreviousLevel) {
+            currentIndex = -(selectedWord.levelIdx * 1000 + selectedWord.wordIdx);
+            // Update last seen timestamp for cross-level word
+            selectedWord.word.lastSeenTimestamp = new Date();
+          } else {
+            currentIndex = selectedWord.wordIdx;
+            pushHistory(selectedWord.wordIdx);
+            onWordShown(selectedWord.wordIdx);
+          }
+          setWord(selectedWord.word.text);
+          saveState(); return;
+        }
+
+        // Fallback to old system if unified pool fails
+        const idx = pickWeightedIndex(words().map((_,i)=>i));
+        currentIndex = idx; pushHistory(idx);
+        onWordShown(idx);
+        setWord(words()[idx].text);
+        saveState(); return;
+
+      } else if (phase === 'review'){
+        if (!reviewSessionQueue.length){
+          // Create review session: each word appears twice, randomly mixed
+          reviewSessionQueue = [];
+          words().forEach((_, i) => {
+            reviewSessionQueue.push(i, i); // Each word appears twice
+          });
+          reviewSessionQueue = shuffle(reviewSessionQueue);
+          reviewSessionPosition = 0;
+          reviewSessionResults = [];
+        }
+        if (reviewSessionPosition >= reviewSessionQueue.length){
+          endReviewSessionAndShowResults();
+          return;
+        }
+        const idx = reviewSessionQueue[reviewSessionPosition];
+        currentIndex = idx; setWord(words()[idx].text);
+        saveState(); return;
+
+      } else if (phase === 'final'){
+        if (!finalQueue.length){
+          finalQueue = shuffle(words().map((_,i)=>i)); // all words once
+          finalPosition = 0;
+          testResults = [];
+        }
+        if (finalPosition >= finalQueue.length){
+          endTestAndShowResults();
+          return;
+        }
+        const idx = finalQueue[finalPosition];
+        currentIndex = idx; setWord(words()[idx].text);
+        saveState(); return;
+
+      } else if (phase === 'postreview'){
+        if (!reviewQueue.length){
+          const canRetest = missedFromTest.every(i => words()[i].streak >= 1);
+          showTestResultsOverlay(false, canRetest);
+          return;
+        }
+        const idx = reviewQueue.shift();
+        currentIndex = idx; setWord(words()[idx].text);
+        saveState(); return;
+
+      } else {
+        setWord('Great work! Ready for your test?');
+      }
+    }
+
+    // ======= EVENTS =======
+    function markRight(){
+      if (currentIndex < 0) return;
+      
+      // Handle cross-level words
+      if (currentIndex < 0) {
+        const crossLevelIdx = Math.abs(currentIndex);
+        const crossLevelIdx_level = Math.floor(crossLevelIdx / 1000);
+        const crossLevelIdx_word = crossLevelIdx % 1000;
+        const w = state.perLevel[crossLevelIdx_level].words[crossLevelIdx_word];
+        w.seen++; seenTotal++; w.correct++; w.streak++;
+        
+        // Check mastery for cross-level word
+        if (!w.mastered) checkMastery(w);
+        if (w.streak >= TRICKY_REMOVE_AFTER_STREAK) w.tricky = false;
+        
+        saveState(); nextWord();
+        return;
+      }
+      
+      const w = words()[currentIndex];
+      w.seen++; seenTotal++; w.correct++; w.streak++;
+      
+      // Track mastery dates for enhanced mastery logic
+      if (!w.masteryDates) w.masteryDates = [];
+      if (Array.isArray(w.masteryDates)) {
+        w.masteryDates.push(new Date());
+      }
+      
+      // Use enhanced mastery check
+      if (!w.mastered) checkMastery(w);
+      
+      if (w.streak >= TRICKY_REMOVE_AFTER_STREAK) w.tricky = false;
+
+      if (phase === 'review'){
+        reviewSessionResults.push({idx: currentIndex, correct:true});
+        reviewSessionPosition++; // always advance in review session
+      } else if (phase === 'final'){
+        testResults.push({idx: currentIndex, correct:true});
+        finalPosition++; // always advance in test
+      }
+      saveState(); nextWord();
+    }
+
+    function markWrong(){
+      if (currentIndex < 0) return;
+      
+      // Handle cross-level words
+      if (currentIndex < 0) {
+        const crossLevelIdx = Math.abs(currentIndex);
+        const crossLevelIdx_level = Math.floor(crossLevelIdx / 1000);
+        const crossLevelIdx_word = crossLevelIdx % 1000;
+        const w = state.perLevel[crossLevelIdx_level].words[crossLevelIdx_word];
+        w.seen++; seenTotal++; w.wrong++; w.streak = 0;
+        
+        // Clear mastery dates on wrong answer
+        w.masteryDates = [];
+        if (w.wrong >= TRICKY_ADD_AFTER_WRONGS) w.tricky = true;
+        
+        saveState(); nextWord();
+        return;
+      }
+      
+      const w = words()[currentIndex];
+      w.seen++; seenTotal++; w.wrong++; w.streak = 0;
+      
+      // Clear mastery dates on wrong answer
+      w.masteryDates = [];
+      
+      if (w.wrong >= TRICKY_ADD_AFTER_WRONGS) w.tricky = true;
+
+      // Add to retry queue for enhanced retry logic
+      if (phase === 'study') {
+        retryQueue.push({
+          wordIdx: currentIndex,
+          attemptsLeft: RETRY_DELAY
+        });
+        cooldownNextKnown = 1;
+      }
+
+      if (phase === 'review'){
+        reviewSessionResults.push({idx: currentIndex, correct:false});
+        reviewSessionPosition++; // still advance in review session
+      } else if (phase === 'final'){
+        testResults.push({idx: currentIndex, correct:false});
+        finalPosition++; // still advance in test
+      }
+      saveState(); nextWord();
+    }
+
+    // ======= MODALS / TEST / REVIEW =======
+    function openPreFinal(){
+      const lvl = LEVELS[levelIdx];
+      document.getElementById('badgeName').textContent = lvl.name;
+      document.getElementById('preFinalOverlay').classList.add('show');
+    }
+    function closePreFinal(){ document.getElementById('preFinalOverlay').classList.remove('show'); }
+    
+    function endReviewSessionAndShowResults(){
+      const total = reviewSessionResults.length;
+      const correct = reviewSessionResults.filter(r=>r.correct).length;
+      const percent = Math.round((correct/total)*100);
+      
+      if (percent === 100){
+        // Perfect review session - now offer the test
+        showReviewSuccessModal();
+      } else {
+        // Some words were missed - return to study mode
+        missedFromReview = reviewSessionResults.filter(r=>!r.correct).map(r=>r.idx);
+        missedFromReview.forEach(i => {
+          const word = words()[i];
+          word.tricky = true;
+          word.streak = 0; // Reset streak for missed words
+        });
+        
+        showReviewFailedModal(percent, correct, total);
+        phase = 'study';
+        reviewSessionQueue = []; reviewSessionPosition = 0; reviewSessionResults = [];
+        updatePhaseBadge(); saveState();
+      }
+    }
+    
+    function showReviewSuccessModal(){
+      const lvl = LEVELS[levelIdx];
+      document.getElementById('badgeName').textContent = lvl.name;
+      document.getElementById('preFinalOverlay').classList.add('show');
+    }
+    
+    function showReviewFailedModal(percent, correct, total){
+      // Create a temporary modal for review failure
+      const modal = document.createElement('div');
+      modal.className = 'overlay show';
+      modal.innerHTML = `
+        <div class="card">
+          <h2>Almost There! 🎯</h2>
+          <div class="muted">You got ${correct}/${total} correct (${percent}%)</div>
+          <div style="margin-top:8px">
+            <div class="muted">Let's practice those tricky words a bit more before the test.</div>
+          </div>
+          <div class="btn-row">
+            <button onclick="this.closest('.overlay').remove()">Keep Practicing</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      // Auto-remove after 3 seconds
+      setTimeout(() => {
+        if (modal.parentNode) modal.remove();
+      }, 3000);
+    }
+
+    function endTestAndShowResults(){
+      const total = testResults.length || words().length;
+      const correct = testResults.filter(r=>r.correct).length;
+      const percent = Math.round((correct/total)*100);
+      missedFromTest = testResults.filter(r=>!r.correct).map(r=>r.idx);
+
+      if (percent === 100){
+        const lvl = LEVELS[levelIdx];
+        const wasAlreadyEarned = currentLevel().badgeEarned;
+        currentLevel().badgeEarned = true;
+        updateBadges();
+        document.getElementById('successTitle').textContent = `${lvl.name} Level Mastered!`;
+        document.getElementById('successText').textContent = `Perfect score, ${studentName || 'great job'}!`;
+        document.getElementById('earnedBadge').textContent = lvl.badge || '🏅';
+        document.getElementById('success').classList.add('show');
+
+        // Show celebration animation for newly earned badges
+        if (!wasAlreadyEarned) {
+          showBadgeCelebration(lvl.badge);
+        }
+
+        phase = 'study';
+        finalQueue = []; finalPosition = 0;
+        firstPassQueue = []; history = [];
+        saveState(); return;
+      }
+
+      // Mark missed words as tricky and return to study mode
+      missedFromTest.forEach(i => {
+        const word = words()[i];
+        word.tricky = true;
+        word.streak = 0; // Reset streak for missed words
+      });
+
+      showTestResultsOverlay(true, false);
+      phase = 'study'; // Return to study mode instead of review
+      updatePhaseBadge(); saveState();
+    }
+
+    function showTestResultsOverlay(showStartButtons, canRetest){
+      const total = testResults.length || words().length;
+      const correct = testResults.filter(r=>r.correct).length;
+      const percent = Math.round((correct/total)*100);
+      
+      // Friendly messaging based on performance
+      if (percent === 100) {
+        document.getElementById('testResultTitle').textContent = 'Perfect Score! 🎉';
+        document.getElementById('testResultSub').textContent = `Amazing work, ${studentName || 'you'}! ${correct}/${total} correct!`;
+        document.getElementById('missedList').textContent = '';
+      } else if (percent >= 80) {
+        document.getElementById('testResultTitle').textContent = 'Great Job! 🌟';
+        document.getElementById('testResultSub').textContent = `You're doing awesome! ${correct}/${total} correct (${percent}%)`;
+        if (missedFromTest.length){
+          const list = missedFromTest.map(i=>words()[i].text).join(', ');
+          document.getElementById('missedList').textContent = `Let's practice these: ${list}`;
+        } else {
+          document.getElementById('missedList').textContent = '';
+        }
+      } else if (percent >= 60) {
+        document.getElementById('testResultTitle').textContent = 'Nice Try! 💪';
+        document.getElementById('testResultSub').textContent = `You're getting there! ${correct}/${total} correct (${percent}%)`;
+        if (missedFromTest.length){
+          const list = missedFromTest.map(i=>words()[i].text).join(', ');
+          document.getElementById('missedList').textContent = `Let's practice these together: ${list}`;
+        } else {
+          document.getElementById('missedList').textContent = '';
+        }
+      } else {
+        document.getElementById('testResultTitle').textContent = 'So Close! 🌱';
+        document.getElementById('testResultSub').textContent = `You can do this! Let's practice those tricky ones! ${correct}/${total} correct (${percent}%)`;
+        if (missedFromTest.length){
+          const list = missedFromTest.map(i=>words()[i].text).join(', ');
+          document.getElementById('missedList').textContent = `We'll practice: ${list}`;
+        } else {
+          document.getElementById('missedList').textContent = '';
+        }
+      }
+      
+      document.getElementById('retestBtn').disabled = !canRetest;
+      document.getElementById('startQuickReviewBtn').style.display = showStartButtons ? 'inline-block' : 'none';
+      document.getElementById('testResultOverlay').classList.add('show');
+    }
+    function closeTestResultsOverlay(){ document.getElementById('testResultOverlay').classList.remove('show'); }
+
+    // ======= LEVELS / STUDENT =======
+    function openLevelPicker(){
+      populateLevelGrid();
+      document.getElementById('levelOverlay').classList.add('show');
+    }
+    function closeLevelPicker(){ document.getElementById('levelOverlay').classList.remove('show'); }
+    function populateLevelGrid(){
+      const grid = document.getElementById('levelGrid'); grid.innerHTML = '';
+      LEVELS.forEach((lvl, i)=>{
+        const btn = document.createElement('button');
+        btn.className = 'level-btn';
+        btn.innerHTML = `
+          <div class="level-dot" style="background:${lvl.color}"></div>
+          <span>${lvl.name}</span>
+          <small>${(state.perLevel[i].words||[]).length} words</small>
+        `;
+        btn.addEventListener('click', ()=>{ switchLevel(i); closeLevelPicker(); });
+        grid.appendChild(btn);
+      });
+    }
+    function syncWordsWithConfig(li){
+      const cfg = LEVELS[li].words || [];
+      const per = state.perLevel[li];
+      const have = new Set(per.words.map(w=>w.text));
+      per.words = per.words.filter(w => cfg.includes(w.text));
+      cfg.forEach(t=>{
+        if (!have.has(t)){
+          per.words.push({
+            text:t, seen:0, correct:0, wrong:0, streak:0, mastered:false, tricky:false,
+            lastSeenTimestamp:null, masteryDates:[], sessionsSeen:0, currentSessionSeen:false
+          });
+        }
+      });
+    }
+    function switchLevel(newIdx){
+      levelIdx = newIdx;
+      phase = 'study';
+      finalQueue = []; finalPosition = 0;
+      firstPassQueue = []; history = [];
+      testResults = []; missedFromTest = []; reviewQueue = [];
+      reviewSessionQueue = []; reviewSessionPosition = 0; reviewSessionResults = [];
+      missedFromReview = [];
+      cooldownNextKnown = 0;
+      retryQueue = [];
+      endSession(); // Clear session tracking
+      syncWordsWithConfig(newIdx);
+      updateHeader(); updatePhaseBadge(); updateBadges(); saveState(); nextWord();
+    }
+
+    // ======= BUTTONS / KEYS =======
+    els.zoneRight.addEventListener('click', markRight);
+    els.zoneWrong.addEventListener('click', markWrong);
+
+    // Only W/R keys; disabled while any modal is open or an input is focused
+    function anyOverlayOpen(){
+      return [...document.querySelectorAll('.overlay')].some(o=>o.classList.contains('show'));
+    }
+    document.addEventListener('keydown', (e)=>{
+      const tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
+      if (tag === 'input' || anyOverlayOpen()) return; // don't capture while typing or in modals
+      const k = e.key.toLowerCase();
+      if (k === 'w'){ e.preventDefault(); markWrong(); }
+      if (k === 'r'){ e.preventDefault(); markRight(); }
+    });
+
+    document.getElementById('resetLevelBtn').addEventListener('click', ()=>{
+      if (!confirm('Reset progress for this level?')) return;
+      state.perLevel[levelIdx].words.forEach(w=>{ 
+        w.seen=0; w.correct=0; w.wrong=0; w.streak=0; w.mastered=false; w.tricky=false;
+        w.lastSeenTimestamp=null; w.masteryDates=[]; w.sessionsSeen=0; w.currentSessionSeen=false;
+      });
+      phase='study'; finalQueue=[]; finalPosition=0; firstPassQueue=[]; history=[]; testResults=[]; missedFromTest=[]; reviewQueue=[]; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; missedFromReview=[]; cooldownNextKnown=0; retryQueue=[];
+      endSession();
+      saveState(); updateProgressBars(); nextWord();
+    });
+
+    document.getElementById('resetAllBtn').addEventListener('click', ()=>{
+      if (!confirm('Reset ALL progress (all levels, badges, and name)?')) return;
+      state = makeFreshState();
+      levelIdx = 0; phase='study'; finalQueue=[]; finalPosition=0; firstPassQueue=[]; history=[];
+      seenTotal = 0; testResults=[]; missedFromTest=[]; reviewQueue=[]; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; missedFromReview=[]; studentName=''; cooldownNextKnown=0; retryQueue=[];
+      endSession();
+      saveState(); updateHeader(); updateBadges(); updatePhaseBadge(); updateProgressBars();
+      openWelcome();
+    });
+
+    document.getElementById('reviewModeBtn').addEventListener('click', ()=>{
+      reviewMode = reviewMode === 'current' ? 'general' : 'current';
+      updateReviewModeButton();
+      saveState();
+    });
+    
+    document.getElementById('changeLevelBtn').addEventListener('click', ()=>{
+      if (!studentName) { openWelcome(); return; }
+      openLevelPicker();
+    });
+    document.getElementById('closeLevelBtn').addEventListener('click', closeLevelPicker);
+
+    document.getElementById('startReviewBtn').addEventListener('click', ()=>{
+      closePreFinal(); phase='review'; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; updatePhaseBadge(); saveState(); nextWord();
+    });
+    
+    document.getElementById('startFinalBtn').addEventListener('click', ()=>{
+      closePreFinal(); phase='final'; finalQueue=[]; finalPosition=0; testResults=[]; updatePhaseBadge(); saveState(); nextWord();
+    });
+
+    document.getElementById('startQuickReviewBtn').addEventListener('click', ()=>{
+      closeTestResultsOverlay(); 
+      phase='study'; // Stay in study mode
+      updatePhaseBadge(); 
+      saveState(); 
+      nextWord(); // Start practicing with tricky words interspersed
+    });
+    document.getElementById('retestBtn').addEventListener('click', ()=>{
+      closeTestResultsOverlay(); phase='final'; finalQueue=[]; finalPosition=0; testResults=[]; updatePhaseBadge(); saveState(); nextWord();
+    });
+
+    document.getElementById('reviewAgainBtn').addEventListener('click', ()=>{
+      document.getElementById('success').classList.remove('show');
+      hideBadgeCelebration();
+      phase='final'; finalQueue=[]; finalPosition=0; testResults=[]; updatePhaseBadge(); saveState(); nextWord();
+    });
+    document.getElementById('pickNextLevelBtn').addEventListener('click', ()=>{
+      document.getElementById('success').classList.remove('show');
+      hideBadgeCelebration();
+      openLevelPicker();
+    });
+
+    // Profile functionality
+    els.studentNameLabel.addEventListener('click', () => {
+      if (studentName) {
+        openProfile();
+      }
+    });
+    
+    els.closeProfileBtn.addEventListener('click', closeProfile);
+    
+    // Close profile when clicking overlay
+    els.profileOverlay.addEventListener('click', (e) => {
+      if (e.target === els.profileOverlay) {
+        closeProfile();
+      }
+    });
+
+    // Welcome / student name (first step)
+    function openWelcome(){
+      els.welcomeOverlay.classList.add('show');
+      els.studentNameInput.focus();
+    }
+    function closeWelcome(){ els.welcomeOverlay.classList.remove('show'); }
+    document.getElementById('saveStudentBtn').addEventListener('click', ()=>{
+      const v = (els.studentNameInput.value || '').trim();
+      studentName = v;
+      
+      // Get selected practice mode
+      const selectedMode = document.querySelector('input[name="practiceMode"]:checked').value;
+      reviewMode = selectedMode;
+      
+      updateHeader(); updateReviewModeButton(); saveState(); closeWelcome(); openLevelPicker();
+    });
+
+    // ======= BOOT =======
+    function boot(){
+      // Ensure per-level words match config
+      state.perLevel.forEach((_, i)=>syncWordsWithConfig(i));
+
+      updateHeader(); updateBadges(); updatePhaseBadge(); updateReviewModeButton(); updateProgressBars();
+
+      // Name and practice mode FIRST; only after both are set do we show level picker
+      if (!studentName || !state.reviewMode){ openWelcome(); }
+      else { openLevelPicker(); }
+
+      nextWord();
+    }
+
+    boot();
+  })();
+  </script>
+</body>
+</html>
