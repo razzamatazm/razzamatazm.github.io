@@ -28,7 +28,7 @@
     }
     .app{display:flex; flex-direction:column; height:100%;}
     header{
-      display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
+      display:flex; align-items:flex-start; justify-content:center; gap:8px;
       padding:12px 14px; background:rgba(255,255,255,0.03);
       border-bottom:1px solid rgba(255,255,255,0.06);
       flex-wrap:wrap;
@@ -307,7 +307,15 @@
       border:1px solid rgba(255,255,255,0.12);
       border-radius:16px; padding:24px;
       box-shadow:0 20px 60px rgba(0,0,0,0.5);
+      position:relative;
     }
+    .profile-close-btn{
+      position:absolute; top:16px; right:16px;
+      background:transparent; color:var(--muted); border:none;
+      font-size:24px; cursor:pointer; padding:4px 8px;
+      line-height:1; transition:all 0.2s ease;
+    }
+    .profile-close-btn:hover{color:var(--fg); transform:scale(1.1);}
     .profile-header{
       text-align:center; margin-bottom:20px;
     }
@@ -469,7 +477,7 @@
           <button id="changeLevelBtn" class="level-button clickable" title="Click to change level">
             <div class="level-button-top">
               <span class="dot" id="levelDot" style="background:#ef4444"></span>
-              <span id="levelName">Red</span><span id="levelSuffix">Level</span><span id="levelMode">Study Mode</span>
+              <span id="levelText">Red Level Study Mode</span>
             </div>
             <div class="level-button-bottom">Click to Change Level</div>
           </button>
@@ -510,7 +518,7 @@
       
       <div class="stats">
         <div id="statLearned">Learned: 0/12</div>
-        <button id="resetLevelBtn" class="reset-level-footer" title="Reset this level's progress">Reset Level</button>
+        <button id="resetLevelBtn" class="reset-level-footer" title="Reset this level's progress">Reset Current Level</button>
       </div>
     </footer>
   </div>
@@ -555,6 +563,7 @@
       
       <div class="btn-row">
         <button id="saveStudentBtn">Let's Start!</button>
+        <button id="importFromWelcomeBtn" class="ghost">📥 Import Backup</button>
       </div>
     </div>
   </div>
@@ -582,7 +591,7 @@
         </div>
       </div>
       <div class="row" style="margin-top:8px">
-        <div class="muted">Get a little more practice in, or jump into the final test!</div>
+        <div class="muted">Get in a little more practice, or try the test again!</div>
       </div>
       <div class="btn-row">
         <button id="startReviewBtn">Start Review</button>
@@ -614,6 +623,7 @@
   <!-- Profile Modal -->
   <div class="profile-overlay" id="profileOverlay" role="dialog" aria-modal="true">
     <div class="profile-card">
+      <button id="closeProfileBtn" class="profile-close-btn" title="Close">×</button>
       <div class="profile-header">
         <div class="profile-avatar">👤</div>
         <div class="profile-name" id="profileName">Student</div>
@@ -648,8 +658,13 @@
       <h3 style="margin:20px 0 12px 0; font-size:18px;">Mastered Words</h3>
       <div class="mastered-words-list" id="masteredWordsList"></div>
       
-      <div class="btn-row" style="margin-top:20px">
-        <button id="closeProfileBtn">Close</button>
+      <div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1);">
+        <h3 style="margin:0 0 12px 0; font-size:16px; text-align:center;">Backup & Restore</h3>
+        <div class="muted" style="font-size:12px; text-align:center; margin-bottom:12px;">Save progress to transfer between devices or keep a backup</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+          <button id="exportProgressBtn" style="background:var(--accent); color:#0f1115; border:1px solid var(--accent); font-size:14px; padding:10px 20px;" title="Export progress data">📤 Export Progress</button>
+          <button id="importProgressBtn" style="background:transparent; color:var(--accent); border:1px solid var(--accent); font-size:14px; padding:10px 20px;" title="Import progress data">📥 Import Progress</button>
+        </div>
       </div>
       
       <div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
@@ -821,6 +836,8 @@
       trickyWordsGrid: document.getElementById('trickyWordsGrid'),
       masteredWordsList: document.getElementById('masteredWordsList'),
       closeProfileBtn: document.getElementById('closeProfileBtn'),
+      exportProgressBtn: document.getElementById('exportProgressBtn'),
+      importProgressBtn: document.getElementById('importProgressBtn'),
       streakCounter: document.getElementById('streakCounter'),
       streakLabel: document.getElementById('streakLabel'),
       streakBar: document.getElementById('streakBar'),
@@ -1172,27 +1189,22 @@
 
     // ======= UI =======
     function updateHeader(){
-      const modeLabel = document.getElementById('levelMode');
-      const levelSuffix = document.getElementById('levelSuffix');
+      const levelTextEl = document.getElementById('levelText');
       
       if (reviewMode === 'general') {
         // All Known Words mode
         els.levelDot.classList.add('rainbow');
         els.levelDot.style.background = '';
-        els.levelName.textContent = 'All Known Words Review';
-        if (modeLabel) modeLabel.textContent = '';
-        if (levelSuffix) levelSuffix.textContent = ''; // Hide "Level" text
+        if (levelTextEl) levelTextEl.textContent = 'All Known Words Review';
       } else {
         // Normal level mode
         const lvl = LEVELS[levelIdx];
         els.levelDot.classList.remove('rainbow');
         els.levelDot.style.background = lvl.color;
-        els.levelName.textContent = lvl.name;
-        if (modeLabel) modeLabel.textContent = ' Study Mode';
-        if (levelSuffix) levelSuffix.textContent = 'Level'; // Show "Level" text
+        if (levelTextEl) levelTextEl.textContent = `${lvl.name} Level Study Mode`;
       }
       
-      els.studentNameLabel.textContent = studentName || '';
+      els.studentNameLabel.textContent = studentName ? `👤 Profile: ${studentName}` : '';
     }
     
     function showBadgeCelebration(badgeEmoji){
@@ -1370,6 +1382,269 @@
     
     function closeProfile(){
       els.profileOverlay.classList.remove('show');
+    }
+    
+    // ======= IMPORT / EXPORT =======
+    function exportProgress(){
+      const exportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        studentName: studentName,
+        data: state
+      };
+      
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const fileName = `rainbow-words-${studentName || 'progress'}-${new Date().toISOString().split('T')[0]}.json`;
+      
+      // Try native share API first (mobile-friendly)
+      if (navigator.share && navigator.canShare) {
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const file = new File([blob], fileName, { type: 'application/json' });
+        
+        if (navigator.canShare({ files: [file] })) {
+          navigator.share({
+            title: 'Rainbow Words Progress',
+            text: `Progress backup for ${studentName || 'student'}`,
+            files: [file]
+          }).catch(err => {
+            console.log('Share cancelled or failed:', err);
+            fallbackExport(jsonString, fileName);
+          });
+          return;
+        }
+      }
+      
+      // Fallback: download file
+      fallbackExport(jsonString, fileName);
+    }
+    
+    function fallbackExport(jsonString, fileName){
+      // Try clipboard first on mobile
+      if (navigator.clipboard && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
+        navigator.clipboard.writeText(jsonString).then(() => {
+          alert('✅ Progress copied to clipboard!\n\nYou can paste it into a note, text message, or email to save it.');
+        }).catch(() => {
+          // If clipboard fails, download file
+          downloadFile(jsonString, fileName);
+        });
+      } else {
+        // Desktop: download file
+        downloadFile(jsonString, fileName);
+      }
+    }
+    
+    function downloadFile(content, fileName){
+      const blob = new Blob([content], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      alert('✅ Progress file downloaded!\n\nKeep this file safe to restore progress later.');
+    }
+    
+    function importProgress(fromWelcome = false){
+      const importModal = document.createElement('div');
+      importModal.className = 'overlay show';
+      importModal.style.zIndex = '40'; // Higher than profile modal (z-index: 35)
+      importModal.innerHTML = `
+        <div class="card">
+          <h2>Import Progress 📥</h2>
+          <div class="muted">Restore progress from a backup file</div>
+          
+          <div style="margin-top:20px;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+              <button id="importFromFileBtn" style="width:100%; padding:14px; background:var(--accent); color:#0f1115; border:1px solid var(--accent); border-radius:10px; font-weight:700; cursor:pointer; font-size:16px;">
+                📁 Choose Backup File
+              </button>
+            </div>
+            
+            <div id="fileSelectedArea" style="display:none; margin-bottom:16px; padding:12px; background:rgba(34,197,94,0.08); border-radius:8px; border:1px solid rgba(34,197,94,0.2);">
+              <div style="font-size:13px; color:#22c55e; font-weight:700; margin-bottom:4px;">✓ File Selected</div>
+              <div id="selectedFileName" style="font-size:12px; color:var(--muted);"></div>
+            </div>
+            
+            <input type="file" id="importFileInput" accept=".json" style="display:none;">
+          </div>
+          
+          <div style="margin-top:16px; padding:12px; background:rgba(251,191,36,0.08); border-radius:8px; border:1px solid rgba(251,191,36,0.2);">
+            <div style="font-size:12px; color:#fbbf24; font-weight:700; margin-bottom:4px;">⚠️ Warning:</div>
+            <div style="font-size:11px; color:var(--muted); line-height:1.4;">
+              This will replace ALL current progress. Make sure you have a backup of current progress before importing!
+            </div>
+          </div>
+          
+          <div class="btn-row" style="margin-top:16px;">
+            <button id="confirmImportBtn" style="display:none; background:var(--success); color:#0f1115; border:1px solid var(--success);">Confirm</button>
+            <button id="cancelImportBtn" class="ghost">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(importModal);
+      
+      // File input handler
+      const fileInput = importModal.querySelector('#importFileInput');
+      const importFromFileBtn = importModal.querySelector('#importFromFileBtn');
+      const fileSelectedArea = importModal.querySelector('#fileSelectedArea');
+      const selectedFileName = importModal.querySelector('#selectedFileName');
+      const confirmImportBtn = importModal.querySelector('#confirmImportBtn');
+      const cancelBtn = importModal.querySelector('#cancelImportBtn');
+      
+      let selectedFileData = null;
+      
+      importFromFileBtn.addEventListener('click', () => {
+        fileInput.click();
+      });
+      
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          console.log('File selected:', file.name);
+          // Show file selected feedback
+          fileSelectedArea.style.display = 'block';
+          selectedFileName.textContent = file.name;
+          confirmImportBtn.style.display = 'inline-block';
+          console.log('Import button shown');
+          
+          // Read file but don't import yet
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            selectedFileData = event.target.result;
+            console.log('File data loaded, length:', selectedFileData.length);
+          };
+          reader.onerror = (error) => {
+            console.error('Error reading file:', error);
+          };
+          reader.readAsText(file);
+        }
+      });
+      
+      confirmImportBtn.addEventListener('click', () => {
+        console.log('Import button clicked!');
+        console.log('selectedFileData exists:', !!selectedFileData);
+        if (selectedFileData) {
+          console.log('Processing import...');
+          processImportData(selectedFileData, importModal);
+        } else {
+          console.error('No file data available');
+          alert('Please wait for the file to finish loading and try again.');
+        }
+      });
+      
+      cancelBtn.addEventListener('click', () => {
+        importModal.remove();
+        if (fromWelcome) {
+          openWelcome();
+        }
+      });
+      
+      importModal.addEventListener('click', (e) => {
+        if (e.target === importModal) {
+          importModal.remove();
+          if (fromWelcome) {
+            openWelcome();
+          }
+        }
+      });
+    }
+    
+    function processImportData(jsonString, modal){
+      try {
+        const importData = JSON.parse(jsonString);
+        
+        // Validate the data structure
+        if (!importData.data || !importData.data.perLevel) {
+          throw new Error('Invalid progress data format');
+        }
+        
+        // Close the import modal first
+        modal.remove();
+        
+        // Show custom confirmation modal
+        const studentNameText = importData.studentName ? ` for ${importData.studentName}` : '';
+        const exportDateText = importData.exportDate ? `<br>Exported: ${new Date(importData.exportDate).toLocaleDateString()}` : '';
+        
+        const confirmModal = document.createElement('div');
+        confirmModal.className = 'overlay show';
+        confirmModal.style.zIndex = '50';
+        confirmModal.innerHTML = `
+          <div class="card">
+            <h2>Import This Progress?</h2>
+            <div class="muted" style="margin-top:12px;">
+              <strong>Student:</strong> ${importData.studentName || 'Unknown'}${exportDateText}
+            </div>
+            <div style="margin-top:16px; padding:12px; background:rgba(251,191,36,0.08); border-radius:8px; border:1px solid rgba(251,191,36,0.2);">
+              <div style="font-size:12px; color:#fbbf24; font-weight:700; margin-bottom:4px;">⚠️ Warning:</div>
+              <div style="font-size:12px; color:var(--muted);">This will replace ALL current progress!</div>
+            </div>
+            <div class="btn-row" style="margin-top:16px;">
+              <button id="confirmImport2Btn" style="background:var(--success); color:#0f1115; border:1px solid var(--success);">Confirm</button>
+              <button id="cancelImport2Btn" class="ghost">Cancel</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(confirmModal);
+        
+        document.getElementById('confirmImport2Btn').addEventListener('click', () => {
+          confirmModal.remove();
+          
+          // Apply the imported data
+          state = importData.data;
+          levelIdx = state.levelIdx ?? 0;
+          phase = state.phase || 'study';
+          finalQueue = state.finalQueue || [];
+          finalPosition = state.finalPosition || 0;
+          seenTotal = state.seenTotal || 0;
+          firstPassQueue = state.firstPassQueue || [];
+          history = state.history || [];
+          testResults = state.testResults || [];
+          missedFromTest = state.missedFromTest || [];
+          reviewQueue = state.reviewQueue || [];
+          reviewSessionQueue = state.reviewSessionQueue || [];
+          reviewSessionPosition = state.reviewSessionPosition || 0;
+          reviewSessionResults = state.reviewSessionResults || [];
+          studentName = state.studentName || '';
+          cooldownNextKnown = state.cooldownNextKnown || 0;
+          retryQueue = state.retryQueue || [];
+          reviewMode = state.reviewMode || 'current';
+          reviewStreak = state.reviewStreak || 10;
+          
+          saveState();
+          
+          // Refresh UI
+          updateHeader();
+          updateBadges();
+          updatePhaseBadge();
+          updateProgressBars();
+          closeProfile();
+          
+          alert('✅ Progress imported successfully!\n\nWelcome back, ' + (studentName || 'student') + '!');
+          
+          // Show the word
+          nextWord();
+        });
+        
+        document.getElementById('cancelImport2Btn').addEventListener('click', () => {
+          confirmModal.remove();
+        });
+        
+        confirmModal.addEventListener('click', (e) => {
+          if (e.target === confirmModal) {
+            confirmModal.remove();
+          }
+        });
+        
+      } catch (error) {
+        console.error('Import error:', error);
+        modal.remove();
+        alert('❌ Error importing progress:\n\n' + error.message + '\n\nMake sure you\'re using a valid progress file from Rainbow Words Trainer.');
+      }
     }
     function updateBadges(){
       els.badgeRow.innerHTML = '';
@@ -2226,7 +2501,7 @@
       if (k === 'r'){ e.preventDefault(); markRight(); }
     });
 
-    document.getElementById('resetLevelBtn').addEventListener('click', ()=>{
+    els.resetLevelBtn.addEventListener('click', ()=>{
       if (!confirm('Reset progress for this level?')) return;
       state.perLevel[levelIdx].words.forEach(w=>{ 
         w.seen=0; w.correct=0; w.wrong=0; w.streak=0; w.mastered=false; w.tricky=false;
@@ -2237,23 +2512,82 @@
       saveState(); updateProgressBars(); nextWord();
     });
 
-    document.getElementById('resetAllBtn').addEventListener('click', ()=>{
-      if (!confirm('Reset ALL progress (all levels, badges, and name)?')) return;
-      state = makeFreshState();
-      levelIdx = 0; phase='study'; finalQueue=[]; finalPosition=0; firstPassQueue=[]; history=[];
-      seenTotal = 0; testResults=[]; missedFromTest=[]; reviewQueue=[]; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; missedFromReview=[]; studentName=''; cooldownNextKnown=0; retryQueue=[];
-      endSession();
-      saveState(); updateHeader(); updateBadges(); updatePhaseBadge(); updateProgressBars();
-      openWelcome();
-    });
+    if (els.resetAllBtn) {
+      els.resetAllBtn.addEventListener('click', (e)=>{
+        console.log('Reset All button clicked!');
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Close profile modal first
+        closeProfile();
+        
+        // Create custom confirmation modal
+        const confirmModal = document.createElement('div');
+        confirmModal.className = 'overlay show';
+        confirmModal.style.zIndex = '50';
+        confirmModal.innerHTML = `
+          <div class="card">
+            <h2>⚠️ Reset ALL Progress?</h2>
+            <div class="muted" style="margin-top:12px;">This will delete:</div>
+            <ul style="margin:12px 0; padding-left:20px; color:var(--muted); font-size:14px;">
+              <li>All progress across all levels</li>
+              <li>All earned badges</li>
+              <li>Student name</li>
+              <li>All word mastery data</li>
+            </ul>
+            <div style="margin-top:12px; padding:12px; background:rgba(239,68,68,0.08); border-radius:8px; border:1px solid rgba(239,68,68,0.2);">
+              <div style="font-size:12px; color:#ef4444; font-weight:700;">This cannot be undone!</div>
+            </div>
+            <div class="btn-row" style="margin-top:16px;">
+              <button id="confirmResetBtn" style="background:#ef4444; color:white; border:1px solid #ef4444;">Reset Everything</button>
+              <button id="cancelResetBtn" class="ghost">Cancel</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(confirmModal);
+        
+        document.getElementById('confirmResetBtn').addEventListener('click', () => {
+          console.log('User confirmed reset');
+          confirmModal.remove();
+          
+          console.log('Starting reset...');
+          state = makeFreshState();
+          levelIdx = 0; phase='study'; finalQueue=[]; finalPosition=0; firstPassQueue=[]; history=[];
+          seenTotal = 0; testResults=[]; missedFromTest=[]; reviewQueue=[]; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; missedFromReview=[]; studentName=''; cooldownNextKnown=0; retryQueue=[];
+          endSession();
+          console.log('Saving state...');
+          saveState(); 
+          console.log('Updating UI...');
+          updateHeader(); updateBadges(); updatePhaseBadge(); updateProgressBars();
+          console.log('Opening welcome...');
+          openWelcome();
+          console.log('Reset complete!');
+        });
+        
+        document.getElementById('cancelResetBtn').addEventListener('click', () => {
+          console.log('User cancelled reset');
+          confirmModal.remove();
+        });
+        
+        confirmModal.addEventListener('click', (e) => {
+          if (e.target === confirmModal) {
+            console.log('User cancelled reset (clicked outside)');
+            confirmModal.remove();
+          }
+        });
+      });
+    } else {
+      console.error('Reset All Button not found!');
+    }
 
     // Review mode button removed - mode now switched via level picker
     
-    document.getElementById('changeLevelBtn').addEventListener('click', ()=>{
+    els.changeLevelBtn.addEventListener('click', ()=>{
       if (!studentName) { openWelcome(); return; }
       openLevelPicker();
     });
-    document.getElementById('closeLevelBtn').addEventListener('click', closeLevelPicker);
+    els.closeLevelBtn.addEventListener('click', closeLevelPicker);
 
     document.getElementById('startReviewBtn').addEventListener('click', ()=>{
       closePreFinal(); phase='review'; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; updatePhaseBadge(); saveState(); nextWord();
@@ -2297,6 +2631,11 @@
     });
     
     els.closeProfileBtn.addEventListener('click', closeProfile);
+    els.exportProgressBtn.addEventListener('click', exportProgress);
+    els.importProgressBtn.addEventListener('click', () => {
+      closeProfile();
+      importProgress();
+    });
     
     // Close profile when clicking overlay
     els.profileOverlay.addEventListener('click', (e) => {
@@ -2313,6 +2652,37 @@
     function closeWelcome(){ els.welcomeOverlay.classList.remove('show'); }
     document.getElementById('saveStudentBtn').addEventListener('click', ()=>{
       const v = (els.studentNameInput.value || '').trim();
+      
+      if (!v) {
+        // Show error modal if no name entered
+        const errorModal = document.createElement('div');
+        errorModal.className = 'overlay show';
+        errorModal.style.zIndex = '50';
+        errorModal.innerHTML = `
+          <div class="card">
+            <h2>⚠️ Student Name Required</h2>
+            <div class="muted" style="margin-top:12px;">Please enter a student name to continue.</div>
+            <div class="btn-row" style="margin-top:16px;">
+              <button id="closeErrorBtn" style="background:var(--accent); color:#0f1115; border:1px solid var(--accent);">OK</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(errorModal);
+        
+        document.getElementById('closeErrorBtn').addEventListener('click', () => {
+          errorModal.remove();
+          els.studentNameInput.focus();
+        });
+        
+        errorModal.addEventListener('click', (e) => {
+          if (e.target === errorModal) {
+            errorModal.remove();
+            els.studentNameInput.focus();
+          }
+        });
+        return;
+      }
+      
       studentName = v;
       
       // Default to current level mode for new users
@@ -2320,6 +2690,11 @@
       
       updateHeader(); saveState(); closeWelcome(); openLevelPicker();
       nextWord(); // Start showing words after level picker
+    });
+    
+    document.getElementById('importFromWelcomeBtn').addEventListener('click', ()=>{
+      closeWelcome();
+      importProgress(true); // true = opened from welcome modal
     });
 
     // ======= WELCOME BACK =======
