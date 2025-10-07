@@ -539,7 +539,7 @@
         </div>
       </div>
       <div class="row" style="margin-top:8px">
-        <div class="muted">The review shows each word once in random order, or jump into a test!</div>
+        <div class="muted">Get a little more practice in, or jump into the final test!</div>
       </div>
       <div class="btn-row">
         <button id="startReviewBtn">Start Review</button>
@@ -1849,14 +1849,14 @@
       const lvl = LEVELS[levelIdx];
       
       // Show both review and retest options initially
-      document.querySelector('#preFinalOverlay h2').textContent = 'Review Time?';
-      document.querySelector('#preFinalOverlay .muted').innerHTML = 'You\'ve earned your <b id="badgeName">' + lvl.name + '</b> badge!';
+    document.querySelector('#preFinalOverlay h2').textContent = 'Nice Job!';
+      document.querySelector('#preFinalOverlay .muted').innerHTML = 'You\'re so close to earning your <b id="badgeName">' + lvl.name + '</b> badge!';
       
       // Show both options from the start
       const btnRow = document.querySelector('#preFinalOverlay .btn-row');
       btnRow.innerHTML = `
-        <button id="startReviewBtn">Practice</button>
-        <button id="startFinalBtn">Test Again</button>
+        <button id="startReviewBtn">Keep Practicing</button>
+        <button id="startFinalBtn">Start the Test</button>
       `;
       
       // Add event listeners
@@ -2331,6 +2331,12 @@
       // Add event listeners
       document.getElementById('continueCurrentBtn').addEventListener('click', () => {
         modal.remove();
+        // Ensure we're in current level mode and study phase
+        reviewMode = 'current';
+        phase = 'study';
+        updateHeader();
+        updatePhaseBadge();
+        saveState();
         nextWord();
       });
       
