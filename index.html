@@ -1503,23 +1503,35 @@
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
+          console.log('File selected:', file.name);
           // Show file selected feedback
           fileSelectedArea.style.display = 'block';
           selectedFileName.textContent = file.name;
           confirmImportBtn.style.display = 'inline-block';
+          console.log('Import button shown');
           
           // Read file but don't import yet
           const reader = new FileReader();
           reader.onload = (event) => {
             selectedFileData = event.target.result;
+            console.log('File data loaded, length:', selectedFileData.length);
+          };
+          reader.onerror = (error) => {
+            console.error('Error reading file:', error);
           };
           reader.readAsText(file);
         }
       });
       
       confirmImportBtn.addEventListener('click', () => {
+        console.log('Import button clicked!');
+        console.log('selectedFileData exists:', !!selectedFileData);
         if (selectedFileData) {
+          console.log('Processing import...');
           processImportData(selectedFileData, importModal);
+        } else {
+          console.error('No file data available');
+          alert('Please wait for the file to finish loading and try again.');
         }
       });
       
