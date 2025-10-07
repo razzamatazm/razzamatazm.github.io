@@ -1555,54 +1555,88 @@
           throw new Error('Invalid progress data format');
         }
         
-        // Show confirmation
-        const studentNameText = importData.studentName ? ` for ${importData.studentName}` : '';
-        const exportDateText = importData.exportDate ? `\nExported: ${new Date(importData.exportDate).toLocaleDateString()}` : '';
-        
-        if (!confirm(`Are you sure you want to import this progress${studentNameText}?${exportDateText}\n\n⚠️ This will replace ALL current progress!`)) {
-          return;
-        }
-        
-        // Apply the imported data
-        state = importData.data;
-        levelIdx = state.levelIdx ?? 0;
-        phase = state.phase || 'study';
-        finalQueue = state.finalQueue || [];
-        finalPosition = state.finalPosition || 0;
-        seenTotal = state.seenTotal || 0;
-        firstPassQueue = state.firstPassQueue || [];
-        history = state.history || [];
-        testResults = state.testResults || [];
-        missedFromTest = state.missedFromTest || [];
-        reviewQueue = state.reviewQueue || [];
-        reviewSessionQueue = state.reviewSessionQueue || [];
-        reviewSessionPosition = state.reviewSessionPosition || 0;
-        reviewSessionResults = state.reviewSessionResults || [];
-        studentName = state.studentName || '';
-        cooldownNextKnown = state.cooldownNextKnown || 0;
-        retryQueue = state.retryQueue || [];
-        reviewMode = state.reviewMode || 'current';
-        reviewStreak = state.reviewStreak || 10;
-        
-        saveState();
-        
-        // Refresh UI
-        updateHeader();
-        updateBadges();
-        updatePhaseBadge();
-        updateReviewModeButton();
-        updateProgressBars();
-        closeProfile();
-        
+        // Close the import modal first
         modal.remove();
         
-        alert('✅ Progress imported successfully!\n\nWelcome back, ' + (studentName || 'student') + '!');
+        // Show custom confirmation modal
+        const studentNameText = importData.studentName ? ` for ${importData.studentName}` : '';
+        const exportDateText = importData.exportDate ? `<br>Exported: ${new Date(importData.exportDate).toLocaleDateString()}` : '';
         
-        // Show the word
-        nextWord();
+        const confirmModal = document.createElement('div');
+        confirmModal.className = 'overlay show';
+        confirmModal.style.zIndex = '50';
+        confirmModal.innerHTML = `
+          <div class="card">
+            <h2>Import This Progress?</h2>
+            <div class="muted" style="margin-top:12px;">
+              <strong>Student:</strong> ${importData.studentName || 'Unknown'}${exportDateText}
+            </div>
+            <div style="margin-top:16px; padding:12px; background:rgba(251,191,36,0.08); border-radius:8px; border:1px solid rgba(251,191,36,0.2);">
+              <div style="font-size:12px; color:#fbbf24; font-weight:700; margin-bottom:4px;">⚠️ Warning:</div>
+              <div style="font-size:12px; color:var(--muted);">This will replace ALL current progress!</div>
+            </div>
+            <div class="btn-row" style="margin-top:16px;">
+              <button id="confirmImport2Btn" style="background:var(--success); color:#0f1115; border:1px solid var(--success);">Import Progress</button>
+              <button id="cancelImport2Btn" class="ghost">Cancel</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(confirmModal);
+        
+        document.getElementById('confirmImport2Btn').addEventListener('click', () => {
+          confirmModal.remove();
+          
+          // Apply the imported data
+          state = importData.data;
+          levelIdx = state.levelIdx ?? 0;
+          phase = state.phase || 'study';
+          finalQueue = state.finalQueue || [];
+          finalPosition = state.finalPosition || 0;
+          seenTotal = state.seenTotal || 0;
+          firstPassQueue = state.firstPassQueue || [];
+          history = state.history || [];
+          testResults = state.testResults || [];
+          missedFromTest = state.missedFromTest || [];
+          reviewQueue = state.reviewQueue || [];
+          reviewSessionQueue = state.reviewSessionQueue || [];
+          reviewSessionPosition = state.reviewSessionPosition || 0;
+          reviewSessionResults = state.reviewSessionResults || [];
+          studentName = state.studentName || '';
+          cooldownNextKnown = state.cooldownNextKnown || 0;
+          retryQueue = state.retryQueue || [];
+          reviewMode = state.reviewMode || 'current';
+          reviewStreak = state.reviewStreak || 10;
+          
+          saveState();
+          
+          // Refresh UI
+          updateHeader();
+          updateBadges();
+          updatePhaseBadge();
+          updateReviewModeButton();
+          updateProgressBars();
+          closeProfile();
+          
+          alert('✅ Progress imported successfully!\n\nWelcome back, ' + (studentName || 'student') + '!');
+          
+          // Show the word
+          nextWord();
+        });
+        
+        document.getElementById('cancelImport2Btn').addEventListener('click', () => {
+          confirmModal.remove();
+        });
+        
+        confirmModal.addEventListener('click', (e) => {
+          if (e.target === confirmModal) {
+            confirmModal.remove();
+          }
+        });
         
       } catch (error) {
         console.error('Import error:', error);
+        modal.remove();
         alert('❌ Error importing progress:\n\n' + error.message + '\n\nMake sure you\'re using a valid progress file from Rainbow Words Trainer.');
       }
     }
