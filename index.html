@@ -1447,7 +1447,7 @@
       alert('✅ Progress file downloaded!\n\nKeep this file safe to restore progress later.');
     }
     
-    function importProgress(){
+    function importProgress(fromWelcome = false){
       const importModal = document.createElement('div');
       importModal.className = 'overlay show';
       importModal.style.zIndex = '40'; // Higher than profile modal (z-index: 35)
@@ -1479,7 +1479,7 @@
           </div>
           
           <div class="btn-row" style="margin-top:16px;">
-            <button id="confirmImportBtn" style="display:none; background:var(--success); color:#0f1115; border:1px solid var(--success);">Import Progress</button>
+            <button id="confirmImportBtn" style="display:none; background:var(--success); color:#0f1115; border:1px solid var(--success);">Confirm</button>
             <button id="cancelImportBtn" class="ghost">Cancel</button>
           </div>
         </div>
@@ -1538,11 +1538,17 @@
       
       cancelBtn.addEventListener('click', () => {
         importModal.remove();
+        if (fromWelcome) {
+          openWelcome();
+        }
       });
       
       importModal.addEventListener('click', (e) => {
         if (e.target === importModal) {
           importModal.remove();
+          if (fromWelcome) {
+            openWelcome();
+          }
         }
       });
     }
@@ -2657,7 +2663,7 @@
     
     document.getElementById('importFromWelcomeBtn').addEventListener('click', ()=>{
       closeWelcome();
-      importProgress();
+      importProgress(true); // true = opened from welcome modal
     });
 
     // ======= WELCOME BACK =======
