@@ -1449,28 +1449,22 @@
     function importProgress(){
       const importModal = document.createElement('div');
       importModal.className = 'overlay show';
+      importModal.style.zIndex = '40'; // Higher than profile modal (z-index: 35)
       importModal.innerHTML = `
         <div class="card">
           <h2>Import Progress 📥</h2>
-          <div class="muted">Restore progress from a backup</div>
+          <div class="muted">Restore progress from a backup file</div>
           
-          <div style="margin-top:16px;">
-            <label style="display:block; font-weight:700; font-size:14px; margin-bottom:8px;">Choose import method:</label>
-            
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-              <button id="importFromFileBtn" style="flex:1; min-width:140px; padding:12px; background:var(--accent); color:#0f1115; border:1px solid var(--accent); border-radius:10px; font-weight:700; cursor:pointer;">
-                📁 Choose File
-              </button>
-              <button id="importFromClipboardBtn" style="flex:1; min-width:140px; padding:12px; background:transparent; color:var(--accent); border:1px solid var(--accent); border-radius:10px; font-weight:700; cursor:pointer;">
-                📋 Paste from Clipboard
+          <div style="margin-top:20px;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+              <button id="importFromFileBtn" style="width:100%; padding:14px; background:var(--accent); color:#0f1115; border:1px solid var(--accent); border-radius:10px; font-weight:700; cursor:pointer; font-size:16px;">
+                📁 Choose Backup File
               </button>
             </div>
             
-            <div id="pasteArea" style="display:none; margin-top:12px;">
-              <textarea id="importTextArea" placeholder="Paste your progress data here..." style="width:100%; min-height:120px; background:#0b1220; color:#e6e6e6; border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:12px; font-size:12px; font-family:monospace; resize:vertical;"></textarea>
-              <button id="processImportBtn" style="margin-top:8px; width:100%; padding:10px; background:var(--success); color:#0f1115; border:1px solid var(--success); border-radius:10px; font-weight:700; cursor:pointer;">
-                ✓ Import This Data
-              </button>
+            <div id="fileSelectedArea" style="display:none; margin-bottom:16px; padding:12px; background:rgba(34,197,94,0.08); border-radius:8px; border:1px solid rgba(34,197,94,0.2);">
+              <div style="font-size:13px; color:#22c55e; font-weight:700; margin-bottom:4px;">✓ File Selected</div>
+              <div id="selectedFileName" style="font-size:12px; color:var(--muted);"></div>
             </div>
             
             <input type="file" id="importFileInput" accept=".json" style="display:none;">
@@ -1494,44 +1488,26 @@
       // File input handler
       const fileInput = importModal.querySelector('#importFileInput');
       const importFromFileBtn = importModal.querySelector('#importFromFileBtn');
-      const importFromClipboardBtn = importModal.querySelector('#importFromClipboardBtn');
-      const pasteArea = importModal.querySelector('#pasteArea');
-      const textArea = importModal.querySelector('#importTextArea');
-      const processImportBtn = importModal.querySelector('#processImportBtn');
+      const fileSelectedArea = importModal.querySelector('#fileSelectedArea');
+      const selectedFileName = importModal.querySelector('#selectedFileName');
       const cancelBtn = importModal.querySelector('#cancelImportBtn');
       
       importFromFileBtn.addEventListener('click', () => {
         fileInput.click();
       });
       
-      importFromClipboardBtn.addEventListener('click', () => {
-        pasteArea.style.display = 'block';
-        if (navigator.clipboard && navigator.clipboard.readText) {
-          navigator.clipboard.readText().then(text => {
-            textArea.value = text;
-          }).catch(() => {
-            // User needs to paste manually
-          });
-        }
-      });
-      
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
+          // Show file selected feedback
+          fileSelectedArea.style.display = 'block';
+          selectedFileName.textContent = file.name;
+          
           const reader = new FileReader();
           reader.onload = (event) => {
             processImportData(event.target.result, importModal);
           };
           reader.readAsText(file);
-        }
-      });
-      
-      processImportBtn.addEventListener('click', () => {
-        const data = textArea.value.trim();
-        if (data) {
-          processImportData(data, importModal);
-        } else {
-          alert('❌ Please paste your progress data first.');
         }
       });
       
@@ -2472,7 +2448,7 @@
       saveState(); updateProgressBars(); nextWord();
     });
 
-    document.getElementById('resetAllBtn').addEventListener('click', ()=>{
+    els.resetAllBtn.addEventListener('click', ()=>{
       if (!confirm('Reset ALL progress (all levels, badges, and name)?')) return;
       state = makeFreshState();
       levelIdx = 0; phase='study'; finalQueue=[]; finalPosition=0; firstPassQueue=[]; history=[];
@@ -2533,7 +2509,10 @@
     
     els.closeProfileBtn.addEventListener('click', closeProfile);
     els.exportProgressBtn.addEventListener('click', exportProgress);
-    els.importProgressBtn.addEventListener('click', importProgress);
+    els.importProgressBtn.addEventListener('click', () => {
+      closeProfile();
+      importProgress();
+    });
     
     // Close profile when clicking overlay
     els.profileOverlay.addEventListener('click', (e) => {
