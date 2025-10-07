@@ -555,6 +555,7 @@
       
       <div class="btn-row">
         <button id="saveStudentBtn">Let's Start!</button>
+        <button id="importFromWelcomeBtn" class="ghost">📥 Import Backup</button>
       </div>
     </div>
   </div>
@@ -2652,6 +2653,11 @@
       
       updateHeader(); saveState(); closeWelcome(); openLevelPicker();
       nextWord(); // Start showing words after level picker
+    });
+    
+    document.getElementById('importFromWelcomeBtn').addEventListener('click', ()=>{
+      closeWelcome();
+      importProgress();
     });
 
     // ======= WELCOME BACK =======
