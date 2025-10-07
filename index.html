@@ -96,6 +96,10 @@
     .level-button-top{display:flex; align-items:center; gap:8px; font-weight:800; font-size:16px; color:var(--fg)}
     .level-button-bottom{font-size:10px; color:var(--muted); font-weight:600}
     .dot{width:12px; height:12px; border-radius:50%}
+    .dot.rainbow{
+      background:linear-gradient(45deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #a855f7, #ec4899, #38bdf8);
+      background-size:200% 200%; animation:rainbowFlow 3s ease infinite;
+    }
     
     .profile-button{
       padding:8px 16px; border-radius:12px; border:2px solid rgba(255,255,255,0.2);
@@ -180,7 +184,7 @@
     .btn-row{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:12px}
     .fun-wrap{display:flex; gap:14px; align-items:center; margin:6px 0 10px 0}
     .fun-emoji{font-size:46px; filter:drop-shadow(0 8px 20px rgba(0,0,0,.35))}
-    .level-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:10px; margin-top:10px}
+    .level-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:10px}
     .level-btn{
       display:flex; flex-direction:column; align-items:center; gap:10px;
       padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,0.12); cursor:pointer;
@@ -407,11 +411,10 @@
     <header>
       <div class="header-top">
         <div class="header-info">
-          <div class="phase-badge" id="phaseBadge">Study Mode</div>
           <button id="changeLevelBtn" class="level-button clickable" title="Click to change level">
             <div class="level-button-top">
               <span class="dot" id="levelDot" style="background:#ef4444"></span>
-              <span id="levelName">Red</span> Level
+              <span id="levelName">Red</span> Level <span id="levelMode">Study Mode</span>
             </div>
             <div class="level-button-bottom">Click to Change Level</div>
           </button>
@@ -424,7 +427,6 @@
         </div>
       </div>
       <div class="controls">
-        <button id="reviewModeBtn" title="Toggle between Current Level Focus and General Review">Review Mode</button>
         <button id="resetLevelBtn" title="Reset this level's progress">Reset Level</button>
       </div>
     </header>
@@ -1125,10 +1127,24 @@
 
     // ======= UI =======
     function updateHeader(){
-      const lvl = LEVELS[levelIdx];
-      els.levelDot.style.background = lvl.color;
-      els.levelName.textContent = lvl.name;
-      els.studentNameLabel.textContent = studentName ? `👤 ${studentName}` : '';
+      const modeLabel = document.getElementById('levelMode');
+      
+      if (reviewMode === 'general') {
+        // All Known Words mode
+        els.levelDot.classList.add('rainbow');
+        els.levelDot.style.background = '';
+        els.levelName.textContent = 'All Known Words';
+        if (modeLabel) modeLabel.textContent = '';
+      } else {
+        // Normal level mode
+        const lvl = LEVELS[levelIdx];
+        els.levelDot.classList.remove('rainbow');
+        els.levelDot.style.background = lvl.color;
+        els.levelName.textContent = lvl.name;
+        if (modeLabel) modeLabel.textContent = ' Study Mode';
+      }
+      
+      els.studentNameLabel.textContent = studentName || '';
     }
     
     function showBadgeCelebration(badgeEmoji){
@@ -1352,15 +1368,7 @@
       }
     }
     
-    function updateReviewModeButton(){
-      if (reviewMode === 'current') {
-        els.reviewModeBtn.textContent = 'Switch to Review All Known Words Mode';
-        els.reviewModeBtn.title = 'Switch to practice all words you\'ve learned so far';
-      } else {
-        els.reviewModeBtn.textContent = 'Switch to Current Level Mode';
-        els.reviewModeBtn.title = 'Switch to focus on your current level only';
-      }
-    }
+    // Review mode button removed - mode now shown in level button
     function initializeStreakCounter(){
       // Create 20 segments for the streak bar
       els.streakBar.innerHTML = '';
@@ -2085,6 +2093,26 @@
         btn.addEventListener('click', ()=>{ switchLevel(i); closeLevelPicker(); });
         grid.appendChild(btn);
       });
+      
+      // Add "All Known Words" option as the 9th button
+      const allMasteredCount = state.perLevel.reduce((sum, level) => {
+        return sum + level.words.filter(w => w.mastered).length;
+      }, 0);
+      
+      const allWordsBtn = document.createElement('button');
+      allWordsBtn.className = 'level-btn';
+      allWordsBtn.innerHTML = `
+        <div class="level-dot" style="background:linear-gradient(45deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #a855f7, #ec4899, #38bdf8); background-size:200% 200%; animation:rainbowFlow 3s ease infinite;"></div>
+        <span>All Known Words</span>
+        <small>${allMasteredCount} words</small>
+      `;
+      allWordsBtn.addEventListener('click', ()=>{
+        reviewMode = 'general';
+        updateHeader();
+        closeLevelPicker();
+        nextWord();
+      });
+      grid.appendChild(allWordsBtn);
     }
     function syncWordsWithConfig(li){
       const cfg = LEVELS[li].words || [];
@@ -2158,7 +2186,7 @@
         reviewMode = 'general';
         phase = 'study'; // Reset phase to study to avoid prefinal/review phases
         reviewStreak = 10; // Reset streak to middle when entering general review mode
-        updateReviewModeButton();
+        updateHeader();
         updatePhaseBadge();
         saveState();
         nextWord();
@@ -2166,7 +2194,7 @@
         // Switching FROM general review mode back to current level
         reviewMode = 'current';
         phase = 'study'; // Reset phase to study
-        updateReviewModeButton();
+        updateHeader();
         updatePhaseBadge();
         saveState();
         // Open level picker to let user choose which level to focus on
@@ -2243,7 +2271,7 @@
       // Default to current level mode for new users
       reviewMode = 'current';
       
-      updateHeader(); updateReviewModeButton(); saveState(); closeWelcome(); openLevelPicker();
+      updateHeader(); saveState(); closeWelcome(); openLevelPicker();
       nextWord(); // Start showing words after level picker
     });
 
@@ -2327,7 +2355,7 @@
         reviewMode = 'general';
         phase = 'study'; // Reset phase to study to avoid prefinal/review phases
         reviewStreak = 10; // Reset streak to middle when entering general review mode
-        updateReviewModeButton();
+        updateHeader();
         saveState();
         nextWord();
       });
@@ -2356,7 +2384,7 @@
       // Initialize streak counter
       initializeStreakCounter();
 
-      updateHeader(); updateBadges(); updatePhaseBadge(); updateReviewModeButton(); updateProgressBars();
+      updateHeader(); updateBadges(); updatePhaseBadge(); updateProgressBars();
 
       // Name and practice mode FIRST; only after both are set do we show welcome back
       if (!studentName){ 
