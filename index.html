@@ -2460,17 +2460,27 @@
       saveState(); updateProgressBars(); nextWord();
     });
 
-    console.log('Reset All Button element:', els.resetAllBtn);
     if (els.resetAllBtn) {
       els.resetAllBtn.addEventListener('click', ()=>{
         console.log('Reset All button clicked!');
-        if (!confirm('Reset ALL progress (all levels, badges, and name)?')) return;
+        const confirmed = confirm('Reset ALL progress (all levels, badges, and name)?');
+        console.log('User confirmed:', confirmed);
+        if (!confirmed) {
+          console.log('User cancelled reset');
+          return;
+        }
+        console.log('Starting reset...');
         state = makeFreshState();
         levelIdx = 0; phase='study'; finalQueue=[]; finalPosition=0; firstPassQueue=[]; history=[];
         seenTotal = 0; testResults=[]; missedFromTest=[]; reviewQueue=[]; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; missedFromReview=[]; studentName=''; cooldownNextKnown=0; retryQueue=[];
         endSession();
-        saveState(); updateHeader(); updateBadges(); updatePhaseBadge(); updateProgressBars();
+        console.log('Saving state...');
+        saveState(); 
+        console.log('Updating UI...');
+        updateHeader(); updateBadges(); updatePhaseBadge(); updateProgressBars();
+        console.log('Opening welcome...');
         openWelcome();
+        console.log('Reset complete!');
       });
     } else {
       console.error('Reset All Button not found!');
