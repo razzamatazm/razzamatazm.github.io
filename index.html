@@ -163,7 +163,13 @@
     }
     .bar > span{position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, #2d6fea, #5ff3b1)}
     #progressFill{position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, #2d6fea, #5ff3b1); transition:width 0.3s ease;}
-    .stats{display:flex; gap:10px; justify-content:flex-start; font-size:16px; color:var(--fg); flex-wrap:wrap; font-weight:800; margin-top:8px}
+    .stats{display:flex; gap:10px; justify-content:space-between; align-items:center; font-size:16px; color:var(--fg); flex-wrap:wrap; font-weight:800; margin-top:8px}
+    .reset-level-footer{
+      background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.1);
+      padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; border-radius:6px;
+      transition:all 0.2s ease;
+    }
+    .reset-level-footer:hover{color:var(--fg); border-color:rgba(255,255,255,0.25)}
     .pill{padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.03)}
     /* overlay / modal base */
     .overlay{
@@ -426,9 +432,6 @@
           </button>
         </div>
       </div>
-      <div class="controls">
-        <button id="resetLevelBtn" title="Reset this level's progress">Reset Level</button>
-      </div>
     </header>
 
     <main class="word-area">
@@ -464,6 +467,7 @@
       
       <div class="stats">
         <div id="statLearned">Learned: 0/12</div>
+        <button id="resetLevelBtn" class="reset-level-footer" title="Reset this level's progress">Reset Level</button>
       </div>
     </footer>
   </div>
@@ -1392,10 +1396,16 @@
         // Hide the entire progress section
         document.querySelector('.progress').style.display = 'none';
         els.statLearned.textContent = '';
+        // Hide Reset Level button in All Known Words mode
+        const resetBtn = document.getElementById('resetLevelBtn');
+        if (resetBtn) resetBtn.style.display = 'none';
         return;
       } else {
         // Show the progress section when not in general review mode
         document.querySelector('.progress').style.display = 'flex';
+        // Show Reset Level button in normal level mode
+        const resetBtn = document.getElementById('resetLevelBtn');
+        if (resetBtn) resetBtn.style.display = 'block';
       }
 
       const total = Math.max(1, words().length);
