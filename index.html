@@ -397,10 +397,17 @@
       animation:streakGlow 1.5s ease-in-out infinite alternate;
     }
     .streak-segment.rainbow{
-      background:linear-gradient(90deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #a855f7, #ec4899, #38bdf8);
-      background-size:200% 100%;
-      animation:rainbowFlow 2s linear infinite, streakGlow 1.5s ease-in-out infinite alternate;
+      box-shadow:0 0 8px rgba(255,255,255,0.4);
+      animation:streakGlow 1.5s ease-in-out infinite alternate, rainbowChase 3s linear infinite;
     }
+    .streak-segment.rainbow-0{background:#ef4444;}
+    .streak-segment.rainbow-1{background:#f97316;}
+    .streak-segment.rainbow-2{background:#eab308;}
+    .streak-segment.rainbow-3{background:#22c55e;}
+    .streak-segment.rainbow-4{background:#3b82f6;}
+    .streak-segment.rainbow-5{background:#a855f7;}
+    .streak-segment.rainbow-6{background:#ec4899;}
+    .streak-segment.rainbow-7{background:#38bdf8;}
     
     @keyframes streakGlow{
       0%{box-shadow:0 0 8px rgba(251,191,36,0.6);}
@@ -409,6 +416,13 @@
     @keyframes rainbowFlow{
       0%{background-position:0% 50%;}
       100%{background-position:200% 50%;}
+    }
+    @keyframes rainbowChase{
+      0%{filter:hue-rotate(0deg) brightness(1);}
+      25%{filter:hue-rotate(90deg) brightness(1.2);}
+      50%{filter:hue-rotate(180deg) brightness(1);}
+      75%{filter:hue-rotate(270deg) brightness(1.2);}
+      100%{filter:hue-rotate(360deg) brightness(1);}
     }
   </style>
 </head>
@@ -1379,7 +1393,13 @@
           
           // Add special effects based on streak level
           if (reviewStreak >= 22) {
+            // Rainbow chase effect: assign each segment a rainbow color that cycles
+            const rainbowColors = 8; // 8 rainbow colors
+            const colorIndex = index % rainbowColors;
             segment.classList.add('rainbow');
+            segment.classList.add(`rainbow-${colorIndex}`);
+            // Stagger the animation for chase effect
+            segment.style.animationDelay = `${index * 0.15}s`;
           } else if (reviewStreak >= 20) {
             segment.classList.add('glowing');
           }
@@ -1850,7 +1870,7 @@
       
       // Show both review and retest options initially
     document.querySelector('#preFinalOverlay h2').textContent = 'Nice Job!';
-      document.querySelector('#preFinalOverlay .muted').innerHTML = 'You\'re so close to earning your <b id="badgeName">' + lvl.name + '</b> badge!';
+      document.querySelector('#preFinalOverlay .muted').innerHTML = 'You\'ve already earned your <b id="badgeName">' + lvl.name + '</b> badge!';
       
       // Show both options from the start
       const btnRow = document.querySelector('#preFinalOverlay .btn-row');
