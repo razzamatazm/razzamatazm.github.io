@@ -2123,7 +2123,11 @@
       `;
       allWordsBtn.addEventListener('click', ()=>{
         reviewMode = 'general';
+        phase = 'study';
+        reviewStreak = 10; // Reset streak to middle when entering All Known Words mode
         updateHeader();
+        updatePhaseBadge();
+        saveState();
         closeLevelPicker();
         nextWord();
       });
