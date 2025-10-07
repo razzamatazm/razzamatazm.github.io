@@ -398,16 +398,16 @@
     }
     .streak-segment.rainbow{
       box-shadow:0 0 8px rgba(255,255,255,0.4);
-      animation:streakGlow 1.5s ease-in-out infinite alternate, rainbowChase 3s linear infinite;
     }
-    .streak-segment.rainbow-0{background:#ef4444;}
-    .streak-segment.rainbow-1{background:#f97316;}
-    .streak-segment.rainbow-2{background:#eab308;}
-    .streak-segment.rainbow-3{background:#22c55e;}
-    .streak-segment.rainbow-4{background:#3b82f6;}
-    .streak-segment.rainbow-5{background:#a855f7;}
-    .streak-segment.rainbow-6{background:#ec4899;}
-    .streak-segment.rainbow-7{background:#38bdf8;}
+    /* Define 8 color states that will cycle */
+    .streak-segment.rainbow-0{background:#ef4444; animation:rainbowChase0 2.4s linear infinite;}
+    .streak-segment.rainbow-1{background:#f97316; animation:rainbowChase1 2.4s linear infinite;}
+    .streak-segment.rainbow-2{background:#eab308; animation:rainbowChase2 2.4s linear infinite;}
+    .streak-segment.rainbow-3{background:#22c55e; animation:rainbowChase3 2.4s linear infinite;}
+    .streak-segment.rainbow-4{background:#3b82f6; animation:rainbowChase4 2.4s linear infinite;}
+    .streak-segment.rainbow-5{background:#a855f7; animation:rainbowChase5 2.4s linear infinite;}
+    .streak-segment.rainbow-6{background:#ec4899; animation:rainbowChase6 2.4s linear infinite;}
+    .streak-segment.rainbow-7{background:#38bdf8; animation:rainbowChase7 2.4s linear infinite;}
     
     @keyframes streakGlow{
       0%{box-shadow:0 0 8px rgba(251,191,36,0.6);}
@@ -417,12 +417,38 @@
       0%{background-position:0% 50%;}
       100%{background-position:200% 50%;}
     }
-    @keyframes rainbowChase{
-      0%{filter:hue-rotate(0deg) brightness(1);}
-      25%{filter:hue-rotate(90deg) brightness(1.2);}
-      50%{filter:hue-rotate(180deg) brightness(1);}
-      75%{filter:hue-rotate(270deg) brightness(1.2);}
-      100%{filter:hue-rotate(360deg) brightness(1);}
+    /* Rainbow chase animations - each segment cycles through all 8 colors */
+    @keyframes rainbowChase0{
+      0%{background:#ef4444;} 12.5%{background:#f97316;} 25%{background:#eab308;} 37.5%{background:#22c55e;}
+      50%{background:#3b82f6;} 62.5%{background:#a855f7;} 75%{background:#ec4899;} 87.5%{background:#38bdf8;} 100%{background:#ef4444;}
+    }
+    @keyframes rainbowChase1{
+      0%{background:#f97316;} 12.5%{background:#eab308;} 25%{background:#22c55e;} 37.5%{background:#3b82f6;}
+      50%{background:#a855f7;} 62.5%{background:#ec4899;} 75%{background:#38bdf8;} 87.5%{background:#ef4444;} 100%{background:#f97316;}
+    }
+    @keyframes rainbowChase2{
+      0%{background:#eab308;} 12.5%{background:#22c55e;} 25%{background:#3b82f6;} 37.5%{background:#a855f7;}
+      50%{background:#ec4899;} 62.5%{background:#38bdf8;} 75%{background:#ef4444;} 87.5%{background:#f97316;} 100%{background:#eab308;}
+    }
+    @keyframes rainbowChase3{
+      0%{background:#22c55e;} 12.5%{background:#3b82f6;} 25%{background:#a855f7;} 37.5%{background:#ec4899;}
+      50%{background:#38bdf8;} 62.5%{background:#ef4444;} 75%{background:#f97316;} 87.5%{background:#eab308;} 100%{background:#22c55e;}
+    }
+    @keyframes rainbowChase4{
+      0%{background:#3b82f6;} 12.5%{background:#a855f7;} 25%{background:#ec4899;} 37.5%{background:#38bdf8;}
+      50%{background:#ef4444;} 62.5%{background:#f97316;} 75%{background:#eab308;} 87.5%{background:#22c55e;} 100%{background:#3b82f6;}
+    }
+    @keyframes rainbowChase5{
+      0%{background:#a855f7;} 12.5%{background:#ec4899;} 25%{background:#38bdf8;} 37.5%{background:#ef4444;}
+      50%{background:#f97316;} 62.5%{background:#eab308;} 75%{background:#22c55e;} 87.5%{background:#3b82f6;} 100%{background:#a855f7;}
+    }
+    @keyframes rainbowChase6{
+      0%{background:#ec4899;} 12.5%{background:#38bdf8;} 25%{background:#ef4444;} 37.5%{background:#f97316;}
+      50%{background:#eab308;} 62.5%{background:#22c55e;} 75%{background:#3b82f6;} 87.5%{background:#a855f7;} 100%{background:#ec4899;}
+    }
+    @keyframes rainbowChase7{
+      0%{background:#38bdf8;} 12.5%{background:#ef4444;} 25%{background:#f97316;} 37.5%{background:#eab308;}
+      50%{background:#22c55e;} 62.5%{background:#3b82f6;} 75%{background:#a855f7;} 87.5%{background:#ec4899;} 100%{background:#38bdf8;}
     }
   </style>
 </head>
@@ -1398,8 +1424,6 @@
             const colorIndex = index % rainbowColors;
             segment.classList.add('rainbow');
             segment.classList.add(`rainbow-${colorIndex}`);
-            // Stagger the animation for chase effect
-            segment.style.animationDelay = `${index * 0.15}s`;
           } else if (reviewStreak >= 20) {
             segment.classList.add('glowing');
           }
