@@ -28,7 +28,7 @@
     }
     .app{display:flex; flex-direction:column; height:100%;}
     header{
-      display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
+      display:flex; align-items:flex-start; justify-content:center; gap:8px;
       padding:12px 14px; background:rgba(255,255,255,0.03);
       border-bottom:1px solid rgba(255,255,255,0.06);
       flex-wrap:wrap;
@@ -307,7 +307,15 @@
       border:1px solid rgba(255,255,255,0.12);
       border-radius:16px; padding:24px;
       box-shadow:0 20px 60px rgba(0,0,0,0.5);
+      position:relative;
     }
+    .profile-close-btn{
+      position:absolute; top:16px; right:16px;
+      background:transparent; color:var(--muted); border:none;
+      font-size:24px; cursor:pointer; padding:4px 8px;
+      line-height:1; transition:all 0.2s ease;
+    }
+    .profile-close-btn:hover{color:var(--fg); transform:scale(1.1);}
     .profile-header{
       text-align:center; margin-bottom:20px;
     }
@@ -469,7 +477,7 @@
           <button id="changeLevelBtn" class="level-button clickable" title="Click to change level">
             <div class="level-button-top">
               <span class="dot" id="levelDot" style="background:#ef4444"></span>
-              <span id="levelName">Red</span><span id="levelSuffix">Level</span><span id="levelMode">Study Mode</span>
+              <span id="levelText">Red Level Study Mode</span>
             </div>
             <div class="level-button-bottom">Click to Change Level</div>
           </button>
@@ -510,7 +518,7 @@
       
       <div class="stats">
         <div id="statLearned">Learned: 0/12</div>
-        <button id="resetLevelBtn" class="reset-level-footer" title="Reset this level's progress">Reset Level</button>
+        <button id="resetLevelBtn" class="reset-level-footer" title="Reset this level's progress">Reset Current Level</button>
       </div>
     </footer>
   </div>
@@ -615,6 +623,7 @@
   <!-- Profile Modal -->
   <div class="profile-overlay" id="profileOverlay" role="dialog" aria-modal="true">
     <div class="profile-card">
+      <button id="closeProfileBtn" class="profile-close-btn" title="Close">×</button>
       <div class="profile-header">
         <div class="profile-avatar">👤</div>
         <div class="profile-name" id="profileName">Student</div>
@@ -648,10 +657,6 @@
       
       <h3 style="margin:20px 0 12px 0; font-size:18px;">Mastered Words</h3>
       <div class="mastered-words-list" id="masteredWordsList"></div>
-      
-      <div class="btn-row" style="margin-top:20px">
-        <button id="closeProfileBtn">Close</button>
-      </div>
       
       <div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1);">
         <h3 style="margin:0 0 12px 0; font-size:16px; text-align:center;">Backup & Restore</h3>
@@ -1184,24 +1189,19 @@
 
     // ======= UI =======
     function updateHeader(){
-      const modeLabel = document.getElementById('levelMode');
-      const levelSuffix = document.getElementById('levelSuffix');
+      const levelTextEl = document.getElementById('levelText');
       
       if (reviewMode === 'general') {
         // All Known Words mode
         els.levelDot.classList.add('rainbow');
         els.levelDot.style.background = '';
-        els.levelName.textContent = 'All Known Words Review';
-        if (modeLabel) modeLabel.textContent = '';
-        if (levelSuffix) levelSuffix.textContent = ''; // Hide "Level" text
+        if (levelTextEl) levelTextEl.textContent = 'All Known Words Review';
       } else {
         // Normal level mode
         const lvl = LEVELS[levelIdx];
         els.levelDot.classList.remove('rainbow');
         els.levelDot.style.background = lvl.color;
-        els.levelName.textContent = lvl.name;
-        if (modeLabel) modeLabel.textContent = ' Study Mode';
-        if (levelSuffix) levelSuffix.textContent = 'Level'; // Show "Level" text
+        if (levelTextEl) levelTextEl.textContent = `${lvl.name} Level Study Mode`;
       }
       
       els.studentNameLabel.textContent = studentName ? `👤 Profile: ${studentName}` : '';
