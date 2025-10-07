@@ -1478,6 +1478,7 @@
           </div>
           
           <div class="btn-row" style="margin-top:16px;">
+            <button id="confirmImportBtn" style="display:none; background:var(--success); color:#0f1115; border:1px solid var(--success);">Import Progress</button>
             <button id="cancelImportBtn" class="ghost">Cancel</button>
           </div>
         </div>
@@ -1490,7 +1491,10 @@
       const importFromFileBtn = importModal.querySelector('#importFromFileBtn');
       const fileSelectedArea = importModal.querySelector('#fileSelectedArea');
       const selectedFileName = importModal.querySelector('#selectedFileName');
+      const confirmImportBtn = importModal.querySelector('#confirmImportBtn');
       const cancelBtn = importModal.querySelector('#cancelImportBtn');
+      
+      let selectedFileData = null;
       
       importFromFileBtn.addEventListener('click', () => {
         fileInput.click();
@@ -1502,12 +1506,20 @@
           // Show file selected feedback
           fileSelectedArea.style.display = 'block';
           selectedFileName.textContent = file.name;
+          confirmImportBtn.style.display = 'inline-block';
           
+          // Read file but don't import yet
           const reader = new FileReader();
           reader.onload = (event) => {
-            processImportData(event.target.result, importModal);
+            selectedFileData = event.target.result;
           };
           reader.readAsText(file);
+        }
+      });
+      
+      confirmImportBtn.addEventListener('click', () => {
+        if (selectedFileData) {
+          processImportData(selectedFileData, importModal);
         }
       });
       
@@ -2437,7 +2449,7 @@
       if (k === 'r'){ e.preventDefault(); markRight(); }
     });
 
-    document.getElementById('resetLevelBtn').addEventListener('click', ()=>{
+    els.resetLevelBtn.addEventListener('click', ()=>{
       if (!confirm('Reset progress for this level?')) return;
       state.perLevel[levelIdx].words.forEach(w=>{ 
         w.seen=0; w.correct=0; w.wrong=0; w.streak=0; w.mastered=false; w.tricky=false;
@@ -2460,11 +2472,11 @@
 
     // Review mode button removed - mode now switched via level picker
     
-    document.getElementById('changeLevelBtn').addEventListener('click', ()=>{
+    els.changeLevelBtn.addEventListener('click', ()=>{
       if (!studentName) { openWelcome(); return; }
       openLevelPicker();
     });
-    document.getElementById('closeLevelBtn').addEventListener('click', closeLevelPicker);
+    els.closeLevelBtn.addEventListener('click', closeLevelPicker);
 
     document.getElementById('startReviewBtn').addEventListener('click', ()=>{
       closePreFinal(); phase='review'; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; updatePhaseBadge(); saveState(); nextWord();
