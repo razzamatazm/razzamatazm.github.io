@@ -420,7 +420,7 @@
           <button id="changeLevelBtn" class="level-button clickable" title="Click to change level">
             <div class="level-button-top">
               <span class="dot" id="levelDot" style="background:#ef4444"></span>
-              <span id="levelName">Red</span>Level<span id="levelMode">Study Mode</span>
+              <span id="levelName">Red</span><span id="levelSuffix">Level</span><span id="levelMode">Study Mode</span>
             </div>
             <div class="level-button-bottom">Click to Change Level</div>
           </button>
@@ -528,14 +528,14 @@
   <div class="overlay" id="preFinalOverlay" role="dialog" aria-modal="true">
     <div class="card">
       <div class="fun-wrap">
-        <div class="fun-emoji">🧠✨</div>
+        <div class="fun-emoji">🧠</div>
         <div>
           <h2>Looks like you've got these words!</h2>
           <div class="muted">Let's do a quick review to make sure you really know them, then you can earn your <b id="badgeName">Red</b> badge!</div>
         </div>
       </div>
       <div class="row" style="margin-top:8px">
-        <div class="muted">The review shows each word twice in random order. Get them all right to unlock the test!</div>
+        <div class="muted">The review shows each word once in random order, or you can test yourself!</div>
       </div>
       <div class="btn-row">
         <button id="startReviewBtn">Start Review</button>
@@ -1126,13 +1126,15 @@
     // ======= UI =======
     function updateHeader(){
       const modeLabel = document.getElementById('levelMode');
+      const levelSuffix = document.getElementById('levelSuffix');
       
       if (reviewMode === 'general') {
         // All Known Words mode
         els.levelDot.classList.add('rainbow');
         els.levelDot.style.background = '';
-        els.levelName.textContent = 'All Known Words';
+        els.levelName.textContent = 'All Known Words Review';
         if (modeLabel) modeLabel.textContent = '';
+        if (levelSuffix) levelSuffix.textContent = ''; // Hide "Level" text
       } else {
         // Normal level mode
         const lvl = LEVELS[levelIdx];
@@ -1140,6 +1142,7 @@
         els.levelDot.style.background = lvl.color;
         els.levelName.textContent = lvl.name;
         if (modeLabel) modeLabel.textContent = ' Study Mode';
+        if (levelSuffix) levelSuffix.textContent = 'Level'; // Show "Level" text
       }
       
       els.studentNameLabel.textContent = studentName || '';
@@ -1890,9 +1893,9 @@
     
     function resetPreFinalModal(){
       // Reset the modal to its original state
-      document.querySelector('#preFinalOverlay h2').textContent = 'Looks like you\'ve got these words!';
+      document.querySelector('#preFinalOverlay h2').textContent = 'Looks like you know these words!';
       document.querySelector('#preFinalOverlay .muted').innerHTML = 'Let\'s do a quick review to make sure you really know them, then you can earn your <b id="badgeName">Red</b> badge!';
-      document.querySelector('#preFinalOverlay .row .muted').textContent = 'The review shows each word twice in random order. Get them all right to unlock the test!';
+      document.querySelector('#preFinalOverlay .row .muted').textContent = 'The review shows each word once in random order. Get them all right to unlock the test!';
       
       // Reset the button row to original state
       const btnRow = document.querySelector('#preFinalOverlay .btn-row');
@@ -1912,7 +1915,7 @@
       
       // Update the modal content to show both review and test options
       document.querySelector('#preFinalOverlay h2').textContent = 'Looks like you\'ve got these words!';
-      document.querySelector('#preFinalOverlay .muted').innerHTML = 'Want to review or retest? You can earn your <b id="badgeName">' + lvl.name + '</b> badge!';
+      document.querySelector('#preFinalOverlay .muted').innerHTML = 'Want to review or test yourself? You can earn your <b id="badgeName">' + lvl.name + '</b> badge!';
       document.querySelector('#preFinalOverlay .row .muted').textContent = 'Choose what you\'d like to do:';
       
       // Show both options
