@@ -405,9 +405,8 @@
       </div>
       <div class="controls">
         <button id="reviewModeBtn" title="Toggle between Current Level Focus and General Review">Review Mode</button>
-        <button id="changeLevelBtn" title="Pick a different level">Level</button>
+        <button id="changeLevelBtn" title="Pick a different level">Change Level</button>
         <button id="resetLevelBtn" title="Reset this level's progress">Reset Level</button>
-        <button id="resetAllBtn" class="ghost" title="Reset ALL progress">Reset All</button>
       </div>
     </header>
 
@@ -451,7 +450,7 @@
   <!-- Welcome / Student name and app overview -->
   <div class="overlay" id="welcomeOverlay" role="dialog" aria-modal="true">
     <div class="card">
-      <h2>Welcome to Sight Words Trainer! 🌈</h2>
+      <h2>Welcome to Rainbow Words Trainer! 🌈</h2>
       <div class="muted">Who's practicing today?</div>
       <div style="margin-top:8px">
         <input id="studentNameInput" type="text" placeholder="Type student name…" />
@@ -461,7 +460,7 @@
         <h3 style="margin:0 0 12px 0; font-size:16px;">How it works:</h3>
         <div style="display:flex; gap:12px; flex-direction:column;">
           <div style="display:flex; align-items:flex-start; gap:12px;">
-            <div style="width:20px; height:20px; border-radius:50%; background:#ef4444; flex-shrink:0; margin-top:2px;"></div>
+            <div style="width:20px; height:20px; border-radius:50%; background:#ffffff; flex-shrink:0; margin-top:2px;">🌈</div>
             <div>
               <div style="font-weight:700; font-size:14px;">Level Mode</div>
               <div style="font-size:12px; color:var(--muted);">Work through 8 rainbow levels (Red → Light Blue). While you practice, you'll also see words from completed levels—especially tricky ones—to keep them fresh!</div>
@@ -480,9 +479,9 @@
       <div style="margin-top:16px; padding:12px; background:rgba(110,168,254,0.08); border-radius:8px; border:1px solid rgba(110,168,254,0.2);">
         <div style="font-size:12px; color:var(--accent); font-weight:700; margin-bottom:4px;">💡 Quick Tips:</div>
         <div style="font-size:11px; color:var(--muted); line-height:1.4;">
-          • Tap left if you missed the word, right if you got it<br>
-          • Use W/R keys for keyboard shortcuts<br>
-          • Click your name to see progress and badges
+          • Tap the red zone if a word is missed, right if they got it<br>
+          • Use W/R keys if working on a computer (Wrong = W, Right = R)<br>
+          • Click the student's name to see progress, badges, and stats
         </div>
       </div>
       
@@ -583,6 +582,10 @@
       
       <div class="btn-row" style="margin-top:20px">
         <button id="closeProfileBtn">Close</button>
+      </div>
+      
+      <div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
+        <button id="resetAllBtn" style="background:transparent; color:#ef4444; border:1px solid #ef4444; font-size:12px; padding:8px 16px;" title="Reset ALL progress">Reset All Progress</button>
       </div>
     </div>
   </div>
@@ -1120,7 +1123,7 @@
         '#e84393', '#00cec9', '#a29bfe', '#ff7675'
       ];
       
-      for(let i = 0; i < 240; i++){ // Doubled from 120 to 240 for more celebration!
+      for(let i = 0; i < 480; i++){ // Doubled from 120 to 240 for more celebration!
         const confetti = document.createElement('div');
         confetti.className = 'confetti-piece';
         confetti.style.background = confettiColors[i % confettiColors.length];
