@@ -966,8 +966,9 @@
             prevWords.forEach((word, wordIdx) => {
               const daysSince = getDaysSince(word.lastSeenTimestamp);
               
-              // Current level focus: only include words that are truly due for review
-              if (daysSince >= 5 || (word.tricky && daysSince >= 2)) {
+              // Include mastered words from previous levels more frequently for better retention
+              // Tricky words always included for practice
+              if (word.tricky || word.mastered || daysSince >= 3) {
                 allWords.push({
                   word: word,
                   levelIdx: prevLevel,
@@ -1023,7 +1024,8 @@
             const prevWords = state.perLevel[prevLevel].words;
             prevWords.forEach((word, wordIdx) => {
               const daysSince = getDaysSince(word.lastSeenTimestamp);
-              if (daysSince >= 7 && !word.mastered) {
+              // Critical if not seen in 5+ days for better retention (includes mastered words)
+              if (daysSince >= 5) {
                 criticalWords.push({
                   word: word,
                   levelIdx: prevLevel,
@@ -1050,7 +1052,8 @@
         // Calculate weights for critical words
         let totalWeight = 0;
         const weights = pool.map(w => {
-          const weight = computeWeight(w.word, w.isFromPreviousLevel);
+          const levelDistance = w.isFromPreviousLevel ? (levelIdx - w.levelIdx) : 0;
+          const weight = computeWeight(w.word, w.isFromPreviousLevel, levelDistance);
           totalWeight += weight;
           return weight;
         });
@@ -1077,7 +1080,8 @@
       // Calculate weights
       let totalWeight = 0;
       const weights = pool.map(w => {
-        const weight = computeWeight(w.word, w.isFromPreviousLevel);
+        const levelDistance = w.isFromPreviousLevel ? (levelIdx - w.levelIdx) : 0;
+        const weight = computeWeight(w.word, w.isFromPreviousLevel, levelDistance);
         totalWeight += weight;
         return weight;
       });
@@ -1443,7 +1447,7 @@
     // ======= PICKING =======
     function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
     
-    function computeWeight(w, isFromPreviousLevel = false){ 
+    function computeWeight(w, isFromPreviousLevel = false, prevLevelDistance = 0){ 
       // Handle backward compatibility for new fields
       const lastSeen = w.lastSeenTimestamp || null;
       const daysSinceLastSeen = getDaysSince(lastSeen);
@@ -1455,15 +1459,28 @@
         // CURRENT LEVEL FOCUS: Prioritize current level for school testing
         if (!isFromPreviousLevel) {
           // Current level: much stronger priority for school tests
-          base += 5; // Base boost for current level words
+          base += 10; // Base boost for current level words
           const timeBoost = Math.min(daysSinceLastSeen * 0.8, 10);
           base += timeBoost;
-          if (w.tricky) base += 3; // Higher tricky boost for current level
+          if (w.tricky) base += 5; // Higher tricky boost for current level
         } else {
-          // Previous level: much smaller boosts to keep focus on current level
-          const timeBoost = Math.min(daysSinceLastSeen * 0.3, 4);
+          // Previous level: Better retention with recency weighting
+          // More recent levels get higher weight (distance 1 = previous level, 2 = level before that, etc)
+          const recencyMultiplier = Math.max(0.3, 1 - (prevLevelDistance * 0.15));
+          
+          if (w.mastered) {
+            // Mastered words from previous levels: good base weight for retention
+            base += 4 * recencyMultiplier; // Increased from 1-2
+          } else {
+            // Unmastered words still get decent priority
+            base += 3 * recencyMultiplier;
+          }
+          
+          const timeBoost = Math.min(daysSinceLastSeen * 0.6, 6) * recencyMultiplier;
           base += timeBoost;
-          if (w.tricky) base += 1; // Smaller tricky boost for previous level
+          
+          // Tricky words always get strong priority
+          if (w.tricky) base += 4; // Increased from 1
         }
       } else {
         // GENERAL REVIEW: Enhanced tricky word priority for retention
