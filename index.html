@@ -86,12 +86,25 @@
     button:hover{border-color:rgba(255,255,255,0.25)}
     .ghost{background:transparent;}
     .badge-row{display:flex; align-items:center; gap:6px; flex-wrap:wrap}
-    .emoji-badge{font-size:18px; line-height:1; filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}
-    .level-chip{
-      padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,0.2); font-weight:700; font-size:12px;
-      display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.04);
+    .emoji-badge{font-size:28px; line-height:1; filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
+    .level-button{
+      padding:10px 16px; border-radius:12px; border:2px solid rgba(255,255,255,0.2); 
+      background:rgba(255,255,255,0.06); cursor:pointer; transition:all 0.2s ease;
+      display:flex; flex-direction:column; align-items:center; gap:4px;
     }
-    .dot{width:10px; height:10px; border-radius:50%}
+    .level-button:hover{background:rgba(255,255,255,0.10); transform:translateY(-1px)}
+    .level-button-top{display:flex; align-items:center; gap:8px; font-weight:800; font-size:16px; color:var(--fg)}
+    .level-button-bottom{font-size:10px; color:var(--muted); font-weight:600}
+    .dot{width:12px; height:12px; border-radius:50%}
+    
+    .profile-button{
+      padding:8px 16px; border-radius:12px; border:2px solid rgba(255,255,255,0.2);
+      background:rgba(255,255,255,0.06); cursor:pointer; transition:all 0.2s ease;
+    }
+    .profile-button:hover{background:rgba(255,255,255,0.10); transform:translateY(-1px)}
+    .profile-button-content{display:flex; flex-direction:column; align-items:center; gap:6px}
+    .student-name{font-weight:800; font-size:16px; color:var(--fg)}
+    .badge-row-inline{display:flex; gap:4px; flex-wrap:wrap; justify-content:center}
     .word-area{
       flex:1; display:flex; align-items:center; justify-content:center;
       position:relative; overflow:hidden;
@@ -140,13 +153,13 @@
     }
     .progress{ display:flex; flex-direction:column; gap:14px; align-items:center }
     .bar-wrap{ display:flex; gap:10px; align-items:center; justify-content:center; width:100%; }
-    .bar-label{ font-size:12px; color:var(--muted); min-width:92px; font-weight:700; letter-spacing:.2px }
+    .bar-label{ font-size:16px; color:var(--fg); min-width:120px; font-weight:800; letter-spacing:.3px }
     .bar{
       position:relative; height:30px; background:#0b0e14; border:1px solid rgba(255,255,255,0.10); border-radius:999px; overflow:hidden; flex:1;
     }
     .bar > span{position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, #2d6fea, #5ff3b1)}
     #progressFill{position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, #2d6fea, #5ff3b1); transition:width 0.3s ease;}
-    .stats{display:flex; gap:10px; justify-content:flex-end; font-size:12px; color:var(--muted); flex-wrap:wrap}
+    .stats{display:flex; gap:10px; justify-content:flex-start; font-size:14px; color:var(--fg); flex-wrap:wrap; font-weight:700}
     .pill{padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.03)}
     /* overlay / modal base */
     .overlay{
@@ -395,17 +408,23 @@
       <div class="header-top">
         <div class="header-info">
           <div class="phase-badge" id="phaseBadge">Study Mode</div>
-          <div class="level-chip" id="levelChip">
-            <span class="dot" id="levelDot" style="background:#ef4444"></span>
-            <span id="levelName">Red</span>
-          </div>
-          <div class="student clickable" id="studentNameLabel"></div>
+          <button id="changeLevelBtn" class="level-button clickable" title="Click to change level">
+            <div class="level-button-top">
+              <span class="dot" id="levelDot" style="background:#ef4444"></span>
+              <span id="levelName">Red</span> Level
+            </div>
+            <div class="level-button-bottom">Click to Change Level</div>
+          </button>
+          <button id="profileBtn" class="profile-button clickable" title="View your progress and badges">
+            <div class="profile-button-content">
+              <div class="student-name" id="studentNameLabel">Student</div>
+              <div class="badge-row-inline" id="badgeRow"></div>
+            </div>
+          </button>
         </div>
-        <div class="badge-row" id="badgeRow" title="Badges you've earned"></div>
       </div>
       <div class="controls">
         <button id="reviewModeBtn" title="Toggle between Current Level Focus and General Review">Review Mode</button>
-        <button id="changeLevelBtn" title="Pick a different level">Change Level</button>
         <button id="resetLevelBtn" title="Reset this level's progress">Reset Level</button>
       </div>
     </header>
@@ -2195,7 +2214,8 @@
     });
 
     // Profile functionality
-    els.studentNameLabel.addEventListener('click', () => {
+    // Profile button click handler
+    document.getElementById('profileBtn').addEventListener('click', () => {
       if (studentName) {
         openProfile();
       }
