@@ -1665,10 +1665,10 @@
 
       } else if (phase === 'review'){
         if (!reviewSessionQueue.length){
-          // Create review session: each word appears twice, randomly mixed
+          // Create review session: each word appears once (first review is simple)
           reviewSessionQueue = [];
           words().forEach((_, i) => {
-            reviewSessionQueue.push(i, i); // Each word appears twice
+            reviewSessionQueue.push(i); // Each word appears once
           });
           reviewSessionQueue = shuffle(reviewSessionQueue);
           reviewSessionPosition = 0;
@@ -1961,22 +1961,19 @@
     }
     
     function startReviewWithMissedWordsPriority(){
-      // Build review queue: missed words at beginning, all other words, then missed words again at end
+      // Build review queue: missed words at beginning (1x), all correct words (1x), missed words at end (1x)
       const allWordIndices = words().map((w, i) => i);
       const correctIndices = allWordIndices.filter(i => !missedFromReview.includes(i));
       
-      // Sequence: missed (twice each), correct (twice each), missed (once each)
       reviewSessionQueue = [];
       
-      // Add missed words twice at the beginning
+      // Add missed words once at the beginning
       missedFromReview.forEach(i => {
-        reviewSessionQueue.push(i);
         reviewSessionQueue.push(i);
       });
       
-      // Add correct words twice
+      // Add correct words once
       correctIndices.forEach(i => {
-        reviewSessionQueue.push(i);
         reviewSessionQueue.push(i);
       });
       
@@ -1985,7 +1982,7 @@
         reviewSessionQueue.push(i);
       });
       
-      // Shuffle within groups for variety but keep the overall structure
+      // Shuffle for variety
       reviewSessionQueue = shuffle(reviewSessionQueue);
       reviewSessionPosition = 0;
       reviewSessionResults = [];
