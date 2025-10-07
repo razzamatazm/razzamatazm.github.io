@@ -2460,15 +2460,21 @@
       saveState(); updateProgressBars(); nextWord();
     });
 
-    els.resetAllBtn.addEventListener('click', ()=>{
-      if (!confirm('Reset ALL progress (all levels, badges, and name)?')) return;
-      state = makeFreshState();
-      levelIdx = 0; phase='study'; finalQueue=[]; finalPosition=0; firstPassQueue=[]; history=[];
-      seenTotal = 0; testResults=[]; missedFromTest=[]; reviewQueue=[]; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; missedFromReview=[]; studentName=''; cooldownNextKnown=0; retryQueue=[];
-      endSession();
-      saveState(); updateHeader(); updateBadges(); updatePhaseBadge(); updateProgressBars();
-      openWelcome();
-    });
+    console.log('Reset All Button element:', els.resetAllBtn);
+    if (els.resetAllBtn) {
+      els.resetAllBtn.addEventListener('click', ()=>{
+        console.log('Reset All button clicked!');
+        if (!confirm('Reset ALL progress (all levels, badges, and name)?')) return;
+        state = makeFreshState();
+        levelIdx = 0; phase='study'; finalQueue=[]; finalPosition=0; firstPassQueue=[]; history=[];
+        seenTotal = 0; testResults=[]; missedFromTest=[]; reviewQueue=[]; reviewSessionQueue=[]; reviewSessionPosition=0; reviewSessionResults=[]; missedFromReview=[]; studentName=''; cooldownNextKnown=0; retryQueue=[];
+        endSession();
+        saveState(); updateHeader(); updateBadges(); updatePhaseBadge(); updateProgressBars();
+        openWelcome();
+      });
+    } else {
+      console.error('Reset All Button not found!');
+    }
 
     // Review mode button removed - mode now switched via level picker
     
