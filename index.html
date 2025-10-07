@@ -2100,6 +2100,7 @@
     }
     function switchLevel(newIdx){
       levelIdx = newIdx;
+      reviewMode = 'current'; // Switch back to current level mode
       phase = 'study';
       finalQueue = []; finalPosition = 0;
       firstPassQueue = []; history = [];
