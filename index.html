@@ -411,18 +411,18 @@
     <header>
       <div class="header-top">
         <div class="header-info">
-          <button id="changeLevelBtn" class="level-button clickable" title="Click to change level">
-            <div class="level-button-top">
-              <span class="dot" id="levelDot" style="background:#ef4444"></span>
-              <span id="levelName">Red</span> Level <span id="levelMode">Study Mode</span>
-            </div>
-            <div class="level-button-bottom">Click to Change Level</div>
-          </button>
           <button id="profileBtn" class="profile-button clickable" title="View your progress and badges">
             <div class="profile-button-content">
               <div class="student-name" id="studentNameLabel">Student</div>
               <div class="badge-row-inline" id="badgeRow"></div>
             </div>
+          </button>
+          <button id="changeLevelBtn" class="level-button clickable" title="Click to change level">
+            <div class="level-button-top">
+              <span class="dot" id="levelDot" style="background:#ef4444"></span>
+              <span id="levelName">Red</span>Level<span id="levelMode">Study Mode</span>
+            </div>
+            <div class="level-button-bottom">Click to Change Level</div>
           </button>
         </div>
       </div>
@@ -1434,12 +1434,12 @@
         
       } else {
         // Study phase: show "Mastery" progress
-        els.progressLabel.textContent = 'Mastery';
+        els.progressLabel.textContent = 'Current Level Progress';
         els.progressBar.title = 'Mastery across the set';
         els.progressFill.style.width = ((learned/total)*100).toFixed(2) + '%';
       }
 
-      els.statLearned.textContent = `Learned: ${learned}/${total}`;
+      els.statLearned.textContent = `Words Learned: ${learned}/${total}`;
     }
     function setWord(text){
       els.word.textContent = text;
