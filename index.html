@@ -1836,15 +1836,14 @@
       const lvl = LEVELS[levelIdx];
       
       // Show both review and retest options initially
-      document.querySelector('#preFinalOverlay h2').textContent = 'Looks like you\'ve got these words!';
-      document.querySelector('#preFinalOverlay .muted').innerHTML = 'Want to review or retest? You can earn your <b id="badgeName">' + lvl.name + '</b> badge!';
-      document.querySelector('#preFinalOverlay .row .muted').textContent = 'Choose what you\'d like to do:';
+      document.querySelector('#preFinalOverlay h2').textContent = 'Looking for a little review?';
+      document.querySelector('#preFinalOverlay .muted').innerHTML = 'You\'ve already earned your <b id="badgeName">' + lvl.name + '</b> badge!';
       
       // Show both options from the start
       const btnRow = document.querySelector('#preFinalOverlay .btn-row');
       btnRow.innerHTML = `
-        <button id="startReviewBtn">Review</button>
-        <button id="startFinalBtn">Test</button>
+        <button id="startReviewBtn">Practice Level</button>
+        <button id="startFinalBtn">Test Again</button>
       `;
       
       // Add event listeners
@@ -2027,7 +2026,7 @@
         word.streak = 0; // Reset streak for missed words
       });
 
-      showTestResultsOverlay(true, false);
+      showTestResultsOverlay(true, true); // Allow retest after failed test
       phase = 'study'; // Return to study mode instead of review
       updatePhaseBadge(); saveState();
     }
