@@ -727,7 +727,6 @@
     // Cross-level review system (now integrated into unified pool)
 
     const els = {
-      phaseBadge: document.getElementById('phaseBadge'),
       word: document.getElementById('wordDisplay'),
       zoneRight: document.getElementById('zoneRight'),
       zoneWrong: document.getElementById('zoneWrong'),
@@ -1335,36 +1334,8 @@
       });
     }
     function updatePhaseBadge(){
-      if (phase === 'study'){
-        if (reviewMode === 'general') {
-          els.phaseBadge.textContent = 'Review Mode';
-          els.phaseBadge.style.background = 'rgba(250,204,21,0.15)';
-          els.phaseBadge.style.color = '#fde68a';
-          els.phaseBadge.style.borderColor = 'rgba(253,230,138,0.35)';
-        } else {
-          els.phaseBadge.textContent = 'Study Mode';
-          els.phaseBadge.style.background = 'rgba(110,168,254,0.12)';
-          els.phaseBadge.style.color = 'var(--accent)';
-          els.phaseBadge.style.borderColor = 'rgba(110,168,254,0.3)';
-        }
-      } else if (phase === 'review'){
-        els.phaseBadge.textContent = 'Review Session';
-        els.phaseBadge.style.background = 'rgba(250,204,21,0.15)';
-        els.phaseBadge.style.color = '#fde68a';
-        els.phaseBadge.style.borderColor = 'rgba(253,230,138,0.35)';
-      } else if (phase === 'final'){
-        els.phaseBadge.textContent = 'Final Test';
-        els.phaseBadge.style.background = 'rgba(46,255,170,0.12)';
-        els.phaseBadge.style.color = 'var(--success)';
-        els.phaseBadge.style.borderColor = 'rgba(46,255,170,0.3)';
-      } else if (phase === 'postreview'){
-        els.phaseBadge.textContent = 'Quick Review';
-        els.phaseBadge.style.background = 'rgba(250,204,21,0.15)';
-        els.phaseBadge.style.color = '#fde68a';
-        els.phaseBadge.style.borderColor = 'rgba(253,230,138,0.35)';
-      } else {
-        els.phaseBadge.textContent = 'Get Ready…';
-      }
+      // Phase badge removed - mode now shown in level button
+      // This function is kept as no-op for compatibility
     }
     
     // Review mode button removed - mode now shown in level button
