@@ -2652,6 +2652,37 @@
     function closeWelcome(){ els.welcomeOverlay.classList.remove('show'); }
     document.getElementById('saveStudentBtn').addEventListener('click', ()=>{
       const v = (els.studentNameInput.value || '').trim();
+      
+      if (!v) {
+        // Show error modal if no name entered
+        const errorModal = document.createElement('div');
+        errorModal.className = 'overlay show';
+        errorModal.style.zIndex = '50';
+        errorModal.innerHTML = `
+          <div class="card">
+            <h2>⚠️ Student Name Required</h2>
+            <div class="muted" style="margin-top:12px;">Please enter a student name to continue.</div>
+            <div class="btn-row" style="margin-top:16px;">
+              <button id="closeErrorBtn" style="background:var(--accent); color:#0f1115; border:1px solid var(--accent);">OK</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(errorModal);
+        
+        document.getElementById('closeErrorBtn').addEventListener('click', () => {
+          errorModal.remove();
+          els.studentNameInput.focus();
+        });
+        
+        errorModal.addEventListener('click', (e) => {
+          if (e.target === errorModal) {
+            errorModal.remove();
+            els.studentNameInput.focus();
+          }
+        });
+        return;
+      }
+      
       studentName = v;
       
       // Default to current level mode for new users
