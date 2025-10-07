@@ -2463,26 +2463,42 @@
     if (els.resetAllBtn) {
       els.resetAllBtn.addEventListener('click', (e)=>{
         console.log('Reset All button clicked!');
-        // Stop event propagation
         e.preventDefault();
         e.stopPropagation();
         
-        // Close profile modal and hide overlay completely
+        // Close profile modal first
         closeProfile();
-        els.profileOverlay.style.display = 'none';
         
-        // Use setTimeout to ensure modal closes before confirm shows
-        setTimeout(() => {
-          const confirmed = confirm('Reset ALL progress (all levels, badges, and name)?');
-          console.log('User confirmed:', confirmed);
+        // Create custom confirmation modal
+        const confirmModal = document.createElement('div');
+        confirmModal.className = 'overlay show';
+        confirmModal.style.zIndex = '50';
+        confirmModal.innerHTML = `
+          <div class="card">
+            <h2>⚠️ Reset ALL Progress?</h2>
+            <div class="muted" style="margin-top:12px;">This will delete:</div>
+            <ul style="margin:12px 0; padding-left:20px; color:var(--muted); font-size:14px;">
+              <li>All progress across all levels</li>
+              <li>All earned badges</li>
+              <li>Student name</li>
+              <li>All word mastery data</li>
+            </ul>
+            <div style="margin-top:12px; padding:12px; background:rgba(239,68,68,0.08); border-radius:8px; border:1px solid rgba(239,68,68,0.2);">
+              <div style="font-size:12px; color:#ef4444; font-weight:700;">This cannot be undone!</div>
+            </div>
+            <div class="btn-row" style="margin-top:16px;">
+              <button id="confirmResetBtn" style="background:#ef4444; color:white; border:1px solid #ef4444;">Reset Everything</button>
+              <button id="cancelResetBtn" class="ghost">Cancel</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(confirmModal);
+        
+        document.getElementById('confirmResetBtn').addEventListener('click', () => {
+          console.log('User confirmed reset');
+          confirmModal.remove();
           
-          // Restore overlay display
-          els.profileOverlay.style.display = '';
-          
-          if (!confirmed) {
-            console.log('User cancelled reset');
-            return;
-          }
           console.log('Starting reset...');
           state = makeFreshState();
           levelIdx = 0; phase='study'; finalQueue=[]; finalPosition=0; firstPassQueue=[]; history=[];
@@ -2495,7 +2511,19 @@
           console.log('Opening welcome...');
           openWelcome();
           console.log('Reset complete!');
-        }, 150);
+        });
+        
+        document.getElementById('cancelResetBtn').addEventListener('click', () => {
+          console.log('User cancelled reset');
+          confirmModal.remove();
+        });
+        
+        confirmModal.addEventListener('click', (e) => {
+          if (e.target === confirmModal) {
+            console.log('User cancelled reset (clicked outside)');
+            confirmModal.remove();
+          }
+        });
       });
     } else {
       console.error('Reset All Button not found!');
