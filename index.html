@@ -2461,15 +2461,24 @@
     });
 
     if (els.resetAllBtn) {
-      els.resetAllBtn.addEventListener('click', ()=>{
+      els.resetAllBtn.addEventListener('click', (e)=>{
         console.log('Reset All button clicked!');
-        // Close profile modal first to allow confirm dialog to show
+        // Stop event propagation
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Close profile modal and hide overlay completely
         closeProfile();
+        els.profileOverlay.style.display = 'none';
         
         // Use setTimeout to ensure modal closes before confirm shows
         setTimeout(() => {
           const confirmed = confirm('Reset ALL progress (all levels, badges, and name)?');
           console.log('User confirmed:', confirmed);
+          
+          // Restore overlay display
+          els.profileOverlay.style.display = '';
+          
           if (!confirmed) {
             console.log('User cancelled reset');
             return;
@@ -2486,7 +2495,7 @@
           console.log('Opening welcome...');
           openWelcome();
           console.log('Reset complete!');
-        }, 100);
+        }, 150);
       });
     } else {
       console.error('Reset All Button not found!');
