@@ -1873,8 +1873,8 @@
         saveState();
         showReviewSuccessModal();
       } else {
-        // Some words were missed - return to study mode
-        console.log('Review failed, returning to study mode');
+        // Some words were missed - restart review with special sequence
+        console.log('Review failed, restarting review with missed words prioritized');
         missedFromReview = reviewSessionResults.filter(r=>!r.correct).map(r=>r.idx);
         missedFromReview.forEach(i => {
           const word = words()[i];
@@ -1883,9 +1883,6 @@
         });
         
         showReviewFailedModal(percent, correct, total);
-        phase = 'study';
-        reviewSessionQueue = []; reviewSessionPosition = 0; reviewSessionResults = [];
-        updatePhaseBadge(); saveState();
       }
     }
     
@@ -1944,22 +1941,58 @@
       modal.className = 'overlay show';
       modal.innerHTML = `
         <div class="card">
-          <h2>Almost There! 🎯</h2>
+          <h2>Let's Try Again! 🎯</h2>
           <div class="muted">You got ${correct}/${total} correct (${percent}%)</div>
           <div style="margin-top:8px">
-            <div class="muted">Let's practice those tricky words a bit more before the test.</div>
+            <div class="muted">Let's review these words again. We'll focus on the tricky ones!</div>
           </div>
           <div class="btn-row">
-            <button onclick="this.closest('.overlay').remove()">Keep Practicing</button>
+            <button id="restartReviewBtn">Start Review</button>
           </div>
         </div>
       `;
       document.body.appendChild(modal);
       
-      // Auto-remove after 3 seconds
-      setTimeout(() => {
-        if (modal.parentNode) modal.remove();
-      }, 3000);
+      // Add event listener to restart review
+      document.getElementById('restartReviewBtn').addEventListener('click', () => {
+        modal.remove();
+        startReviewWithMissedWordsPriority();
+      });
+    }
+    
+    function startReviewWithMissedWordsPriority(){
+      // Build review queue: missed words at beginning, all other words, then missed words again at end
+      const allWordIndices = words().map((w, i) => i);
+      const correctIndices = allWordIndices.filter(i => !missedFromReview.includes(i));
+      
+      // Sequence: missed (twice each), correct (twice each), missed (once each)
+      reviewSessionQueue = [];
+      
+      // Add missed words twice at the beginning
+      missedFromReview.forEach(i => {
+        reviewSessionQueue.push(i);
+        reviewSessionQueue.push(i);
+      });
+      
+      // Add correct words twice
+      correctIndices.forEach(i => {
+        reviewSessionQueue.push(i);
+        reviewSessionQueue.push(i);
+      });
+      
+      // Add missed words once more at the end
+      missedFromReview.forEach(i => {
+        reviewSessionQueue.push(i);
+      });
+      
+      // Shuffle within groups for variety but keep the overall structure
+      reviewSessionQueue = shuffle(reviewSessionQueue);
+      reviewSessionPosition = 0;
+      reviewSessionResults = [];
+      phase = 'review';
+      updatePhaseBadge();
+      saveState();
+      nextWord();
     }
 
     function endTestAndShowResults(){
