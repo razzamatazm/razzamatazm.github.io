@@ -1042,7 +1042,11 @@
     }
     
     function pickFromUnifiedPool() {
-      // TIER 1: Critical reviews (always prioritize words not seen in 7+ days)
+      // Get all words first to check for tricky words
+      const allWords = getAllWordsForSelection();
+      const hasTricky = hasTrickyWordsInPool(allWords);
+      
+      // TIER 1: Critical reviews (always prioritize words not seen in 5+ days)
       const criticalWords = getCriticalWords();
       if (criticalWords.length > 0) {
         // Filter out words in history
@@ -1053,7 +1057,7 @@
         let totalWeight = 0;
         const weights = pool.map(w => {
           const levelDistance = w.isFromPreviousLevel ? (levelIdx - w.levelIdx) : 0;
-          const weight = computeWeight(w.word, w.isFromPreviousLevel, levelDistance);
+          const weight = computeWeight(w.word, w.isFromPreviousLevel, levelDistance, hasTricky);
           totalWeight += weight;
           return weight;
         });
@@ -1070,7 +1074,7 @@
       }
       
       // TIER 2: Regular weighted selection from all available words
-      const allWords = getAllWordsForSelection();
+      // allWords already declared at the top of function
       if (allWords.length === 0) return null;
       
       // Filter out words in history (unless pool is too small)
@@ -1081,7 +1085,7 @@
       let totalWeight = 0;
       const weights = pool.map(w => {
         const levelDistance = w.isFromPreviousLevel ? (levelIdx - w.levelIdx) : 0;
-        const weight = computeWeight(w.word, w.isFromPreviousLevel, levelDistance);
+        const weight = computeWeight(w.word, w.isFromPreviousLevel, levelDistance, hasTricky);
         totalWeight += weight;
         return weight;
       });
@@ -1330,10 +1334,10 @@
     
     function updateReviewModeButton(){
       if (reviewMode === 'current') {
-        els.reviewModeBtn.textContent = 'Switch to All Known Words';
+        els.reviewModeBtn.textContent = 'Switch to Review All Known Words Mode';
         els.reviewModeBtn.title = 'Switch to practice all words you\'ve learned so far';
       } else {
-        els.reviewModeBtn.textContent = 'Switch to Current Level';
+        els.reviewModeBtn.textContent = 'Switch to Current Level Mode';
         els.reviewModeBtn.title = 'Switch to focus on your current level only';
       }
     }
@@ -1447,7 +1451,11 @@
     // ======= PICKING =======
     function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
     
-    function computeWeight(w, isFromPreviousLevel = false, prevLevelDistance = 0){ 
+    function hasTrickyWordsInPool(allWords) {
+      return allWords.some(w => w.word.tricky);
+    }
+    
+    function computeWeight(w, isFromPreviousLevel = false, prevLevelDistance = 0, hasTrickyWords = false){ 
       // Handle backward compatibility for new fields
       const lastSeen = w.lastSeenTimestamp || null;
       const daysSinceLastSeen = getDaysSince(lastSeen);
@@ -1456,31 +1464,34 @@
       let base = 1 + (w.wrong || 0) * WRONG_FACTOR - (w.streak || 0);
       
       if (reviewMode === 'current') {
-        // CURRENT LEVEL FOCUS: Prioritize current level for school testing
+        // TARGET DISTRIBUTION: 70% current / 15% tricky / 15% mastered (or 80/20 if no tricky)
         if (!isFromPreviousLevel) {
-          // Current level: much stronger priority for school tests
-          base += 10; // Base boost for current level words
+          // Current level: 70% or 80% of distribution
+          base += 25; // Strong base boost for current level
           const timeBoost = Math.min(daysSinceLastSeen * 0.8, 10);
           base += timeBoost;
-          if (w.tricky) base += 5; // Higher tricky boost for current level
+          if (w.tricky) base += 8; // Tricky current level words get extra boost
         } else {
-          // Previous level: Better retention with recency weighting
-          // More recent levels get higher weight (distance 1 = previous level, 2 = level before that, etc)
-          const recencyMultiplier = Math.max(0.3, 1 - (prevLevelDistance * 0.15));
+          // Previous level: recency-weighted distribution
+          const recencyMultiplier = Math.max(0.2, 1 - (prevLevelDistance * 0.2));
           
-          if (w.mastered) {
-            // Mastered words from previous levels: good base weight for retention
-            base += 4 * recencyMultiplier; // Increased from 1-2
+          if (w.tricky) {
+            // Tricky words: target 15% of distribution
+            base += 12 * recencyMultiplier;
+            const timeBoost = Math.min(daysSinceLastSeen * 0.8, 8) * recencyMultiplier;
+            base += timeBoost;
+          } else if (w.mastered) {
+            // Mastered words: target 15% (or 20% if no tricky words)
+            const masteredBoost = hasTrickyWords ? 5 : 7; // Higher if no tricky words
+            base += masteredBoost * recencyMultiplier;
+            const timeBoost = Math.min(daysSinceLastSeen * 0.5, 5) * recencyMultiplier;
+            base += timeBoost;
           } else {
-            // Unmastered words still get decent priority
-            base += 3 * recencyMultiplier;
+            // Unmastered non-tricky words from previous levels: minimal weight
+            base += 2 * recencyMultiplier;
+            const timeBoost = Math.min(daysSinceLastSeen * 0.4, 3) * recencyMultiplier;
+            base += timeBoost;
           }
-          
-          const timeBoost = Math.min(daysSinceLastSeen * 0.6, 6) * recencyMultiplier;
-          base += timeBoost;
-          
-          // Tricky words always get strong priority
-          if (w.tricky) base += 4; // Increased from 1
         }
       } else {
         // GENERAL REVIEW: Enhanced tricky word priority for retention
