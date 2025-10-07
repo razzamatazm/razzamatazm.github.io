@@ -1433,13 +1433,16 @@
         els.progressFill.style.width = pct.toFixed(2) + '%';
         
       } else {
-        // Study phase: show "Mastery" progress
-        els.progressLabel.textContent = 'Current Level Progress';
+        // Study phase: show level-specific progress
+        const lvl = LEVELS[levelIdx];
+        els.progressLabel.textContent = 'Level Progress';
         els.progressBar.title = 'Mastery across the set';
         els.progressFill.style.width = ((learned/total)*100).toFixed(2) + '%';
       }
 
-      els.statLearned.textContent = `Words Learned: ${learned}/${total}`;
+      // Show color name in the learned stat
+      const lvl = LEVELS[levelIdx];
+      els.statLearned.textContent = `${lvl.name} Words Learned: ${learned}/${total}`;
     }
     function setWord(text){
       els.word.textContent = text;
