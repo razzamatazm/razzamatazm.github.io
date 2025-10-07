@@ -583,7 +583,7 @@
         </div>
       </div>
       <div class="row" style="margin-top:8px">
-        <div class="muted">Get a little more practice in, or jump into the final test!</div>
+        <div class="muted">Get in a little more practice, or try the test again!</div>
       </div>
       <div class="btn-row">
         <button id="startReviewBtn">Start Review</button>
@@ -1204,7 +1204,7 @@
         if (levelSuffix) levelSuffix.textContent = 'Level'; // Show "Level" text
       }
       
-      els.studentNameLabel.textContent = studentName || '';
+      els.studentNameLabel.textContent = studentName ? `👤 Profile: ${studentName}` : '';
     }
     
     function showBadgeCelebration(badgeEmoji){
