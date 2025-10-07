@@ -775,7 +775,6 @@
       trickyWordsGrid: document.getElementById('trickyWordsGrid'),
       masteredWordsList: document.getElementById('masteredWordsList'),
       closeProfileBtn: document.getElementById('closeProfileBtn'),
-      reviewModeBtn: document.getElementById('reviewModeBtn'),
       streakCounter: document.getElementById('streakCounter'),
       streakLabel: document.getElementById('streakLabel'),
       streakBar: document.getElementById('streakBar'),
@@ -2180,27 +2179,7 @@
       openWelcome();
     });
 
-    document.getElementById('reviewModeBtn').addEventListener('click', ()=>{
-      if (reviewMode === 'current') {
-        // Switching TO general review mode
-        reviewMode = 'general';
-        phase = 'study'; // Reset phase to study to avoid prefinal/review phases
-        reviewStreak = 10; // Reset streak to middle when entering general review mode
-        updateHeader();
-        updatePhaseBadge();
-        saveState();
-        nextWord();
-      } else {
-        // Switching FROM general review mode back to current level
-        reviewMode = 'current';
-        phase = 'study'; // Reset phase to study
-        updateHeader();
-        updatePhaseBadge();
-        saveState();
-        // Open level picker to let user choose which level to focus on
-        openLevelPicker();
-      }
-    });
+    // Review mode button removed - mode now switched via level picker
     
     document.getElementById('changeLevelBtn').addEventListener('click', ()=>{
       if (!studentName) { openWelcome(); return; }
