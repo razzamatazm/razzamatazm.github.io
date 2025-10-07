@@ -164,6 +164,7 @@ Each word tracks:
 23. **Dedicated General Review Logic**: Bypasses all current-level-specific logic when in general review mode
 24. **Simplified Progress Bar Display**: Progress bars now show only one bar at a time - "Mastery" during study phase, "Review Progress" during review phase, and "Test Progress" during test phase
 25. **Fixed Test Trigger**: Changed test offering to require ALL words mastered instead of 80% threshold
+26. **Import/Export Feature**: Added backup and restore functionality with mobile-optimized sharing and clipboard support
 
 ### Known Issues & Solutions
 - **Text appearing in word display**: Fixed by adding phase checks in `nextWord()`
@@ -185,11 +186,21 @@ Each word tracks:
 - Minimal DOM manipulation
 - Responsive design for mobile/desktop
 
+### Import/Export Feature
+- **Export Progress**: Creates a JSON backup file with all student progress
+  - Mobile: Uses native share sheet to share via text/email or copies to clipboard
+  - Desktop: Downloads a `.json` file
+  - File naming: `rainbow-words-{studentName}-{date}.json`
+- **Import Progress**: Restores progress from backup
+  - Supports file upload or paste from clipboard
+  - Validates data before importing
+  - Warns user about replacing current progress
+  - Mobile-friendly with multiple input methods
+
 ### Future Enhancements
 - Additional level customization
 - Progress analytics
-- Multi-student support
-- Export/import progress data
+- Multi-student support via separate export files
 
 ## Maintenance
 

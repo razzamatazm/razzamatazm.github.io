@@ -652,6 +652,15 @@
         <button id="closeProfileBtn">Close</button>
       </div>
       
+      <div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1);">
+        <h3 style="margin:0 0 12px 0; font-size:16px; text-align:center;">Backup & Restore</h3>
+        <div class="muted" style="font-size:12px; text-align:center; margin-bottom:12px;">Save progress to transfer between devices or keep a backup</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+          <button id="exportProgressBtn" style="background:var(--accent); color:#0f1115; border:1px solid var(--accent); font-size:14px; padding:10px 20px;" title="Export progress data">📤 Export Progress</button>
+          <button id="importProgressBtn" style="background:transparent; color:var(--accent); border:1px solid var(--accent); font-size:14px; padding:10px 20px;" title="Import progress data">📥 Import Progress</button>
+        </div>
+      </div>
+      
       <div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
         <button id="resetAllBtn" style="background:transparent; color:#ef4444; border:1px solid #ef4444; font-size:12px; padding:8px 16px;" title="Reset ALL progress">Reset All Progress</button>
       </div>
@@ -821,6 +830,8 @@
       trickyWordsGrid: document.getElementById('trickyWordsGrid'),
       masteredWordsList: document.getElementById('masteredWordsList'),
       closeProfileBtn: document.getElementById('closeProfileBtn'),
+      exportProgressBtn: document.getElementById('exportProgressBtn'),
+      importProgressBtn: document.getElementById('importProgressBtn'),
       streakCounter: document.getElementById('streakCounter'),
       streakLabel: document.getElementById('streakLabel'),
       streakBar: document.getElementById('streakBar'),
@@ -1370,6 +1381,230 @@
     
     function closeProfile(){
       els.profileOverlay.classList.remove('show');
+    }
+    
+    // ======= IMPORT / EXPORT =======
+    function exportProgress(){
+      const exportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        studentName: studentName,
+        data: state
+      };
+      
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const fileName = `rainbow-words-${studentName || 'progress'}-${new Date().toISOString().split('T')[0]}.json`;
+      
+      // Try native share API first (mobile-friendly)
+      if (navigator.share && navigator.canShare) {
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const file = new File([blob], fileName, { type: 'application/json' });
+        
+        if (navigator.canShare({ files: [file] })) {
+          navigator.share({
+            title: 'Rainbow Words Progress',
+            text: `Progress backup for ${studentName || 'student'}`,
+            files: [file]
+          }).catch(err => {
+            console.log('Share cancelled or failed:', err);
+            fallbackExport(jsonString, fileName);
+          });
+          return;
+        }
+      }
+      
+      // Fallback: download file
+      fallbackExport(jsonString, fileName);
+    }
+    
+    function fallbackExport(jsonString, fileName){
+      // Try clipboard first on mobile
+      if (navigator.clipboard && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
+        navigator.clipboard.writeText(jsonString).then(() => {
+          alert('✅ Progress copied to clipboard!\n\nYou can paste it into a note, text message, or email to save it.');
+        }).catch(() => {
+          // If clipboard fails, download file
+          downloadFile(jsonString, fileName);
+        });
+      } else {
+        // Desktop: download file
+        downloadFile(jsonString, fileName);
+      }
+    }
+    
+    function downloadFile(content, fileName){
+      const blob = new Blob([content], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      alert('✅ Progress file downloaded!\n\nKeep this file safe to restore progress later.');
+    }
+    
+    function importProgress(){
+      const importModal = document.createElement('div');
+      importModal.className = 'overlay show';
+      importModal.innerHTML = `
+        <div class="card">
+          <h2>Import Progress 📥</h2>
+          <div class="muted">Restore progress from a backup</div>
+          
+          <div style="margin-top:16px;">
+            <label style="display:block; font-weight:700; font-size:14px; margin-bottom:8px;">Choose import method:</label>
+            
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+              <button id="importFromFileBtn" style="flex:1; min-width:140px; padding:12px; background:var(--accent); color:#0f1115; border:1px solid var(--accent); border-radius:10px; font-weight:700; cursor:pointer;">
+                📁 Choose File
+              </button>
+              <button id="importFromClipboardBtn" style="flex:1; min-width:140px; padding:12px; background:transparent; color:var(--accent); border:1px solid var(--accent); border-radius:10px; font-weight:700; cursor:pointer;">
+                📋 Paste from Clipboard
+              </button>
+            </div>
+            
+            <div id="pasteArea" style="display:none; margin-top:12px;">
+              <textarea id="importTextArea" placeholder="Paste your progress data here..." style="width:100%; min-height:120px; background:#0b1220; color:#e6e6e6; border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:12px; font-size:12px; font-family:monospace; resize:vertical;"></textarea>
+              <button id="processImportBtn" style="margin-top:8px; width:100%; padding:10px; background:var(--success); color:#0f1115; border:1px solid var(--success); border-radius:10px; font-weight:700; cursor:pointer;">
+                ✓ Import This Data
+              </button>
+            </div>
+            
+            <input type="file" id="importFileInput" accept=".json" style="display:none;">
+          </div>
+          
+          <div style="margin-top:16px; padding:12px; background:rgba(251,191,36,0.08); border-radius:8px; border:1px solid rgba(251,191,36,0.2);">
+            <div style="font-size:12px; color:#fbbf24; font-weight:700; margin-bottom:4px;">⚠️ Warning:</div>
+            <div style="font-size:11px; color:var(--muted); line-height:1.4;">
+              This will replace ALL current progress. Make sure you have a backup of current progress before importing!
+            </div>
+          </div>
+          
+          <div class="btn-row" style="margin-top:16px;">
+            <button id="cancelImportBtn" class="ghost">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(importModal);
+      
+      // File input handler
+      const fileInput = importModal.querySelector('#importFileInput');
+      const importFromFileBtn = importModal.querySelector('#importFromFileBtn');
+      const importFromClipboardBtn = importModal.querySelector('#importFromClipboardBtn');
+      const pasteArea = importModal.querySelector('#pasteArea');
+      const textArea = importModal.querySelector('#importTextArea');
+      const processImportBtn = importModal.querySelector('#processImportBtn');
+      const cancelBtn = importModal.querySelector('#cancelImportBtn');
+      
+      importFromFileBtn.addEventListener('click', () => {
+        fileInput.click();
+      });
+      
+      importFromClipboardBtn.addEventListener('click', () => {
+        pasteArea.style.display = 'block';
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          navigator.clipboard.readText().then(text => {
+            textArea.value = text;
+          }).catch(() => {
+            // User needs to paste manually
+          });
+        }
+      });
+      
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            processImportData(event.target.result, importModal);
+          };
+          reader.readAsText(file);
+        }
+      });
+      
+      processImportBtn.addEventListener('click', () => {
+        const data = textArea.value.trim();
+        if (data) {
+          processImportData(data, importModal);
+        } else {
+          alert('❌ Please paste your progress data first.');
+        }
+      });
+      
+      cancelBtn.addEventListener('click', () => {
+        importModal.remove();
+      });
+      
+      importModal.addEventListener('click', (e) => {
+        if (e.target === importModal) {
+          importModal.remove();
+        }
+      });
+    }
+    
+    function processImportData(jsonString, modal){
+      try {
+        const importData = JSON.parse(jsonString);
+        
+        // Validate the data structure
+        if (!importData.data || !importData.data.perLevel) {
+          throw new Error('Invalid progress data format');
+        }
+        
+        // Show confirmation
+        const studentNameText = importData.studentName ? ` for ${importData.studentName}` : '';
+        const exportDateText = importData.exportDate ? `\nExported: ${new Date(importData.exportDate).toLocaleDateString()}` : '';
+        
+        if (!confirm(`Are you sure you want to import this progress${studentNameText}?${exportDateText}\n\n⚠️ This will replace ALL current progress!`)) {
+          return;
+        }
+        
+        // Apply the imported data
+        state = importData.data;
+        levelIdx = state.levelIdx ?? 0;
+        phase = state.phase || 'study';
+        finalQueue = state.finalQueue || [];
+        finalPosition = state.finalPosition || 0;
+        seenTotal = state.seenTotal || 0;
+        firstPassQueue = state.firstPassQueue || [];
+        history = state.history || [];
+        testResults = state.testResults || [];
+        missedFromTest = state.missedFromTest || [];
+        reviewQueue = state.reviewQueue || [];
+        reviewSessionQueue = state.reviewSessionQueue || [];
+        reviewSessionPosition = state.reviewSessionPosition || 0;
+        reviewSessionResults = state.reviewSessionResults || [];
+        studentName = state.studentName || '';
+        cooldownNextKnown = state.cooldownNextKnown || 0;
+        retryQueue = state.retryQueue || [];
+        reviewMode = state.reviewMode || 'current';
+        reviewStreak = state.reviewStreak || 10;
+        
+        saveState();
+        
+        // Refresh UI
+        updateHeader();
+        updateBadges();
+        updatePhaseBadge();
+        updateReviewModeButton();
+        updateProgressBars();
+        closeProfile();
+        
+        modal.remove();
+        
+        alert('✅ Progress imported successfully!\n\nWelcome back, ' + (studentName || 'student') + '!');
+        
+        // Show the word
+        nextWord();
+        
+      } catch (error) {
+        console.error('Import error:', error);
+        alert('❌ Error importing progress:\n\n' + error.message + '\n\nMake sure you\'re using a valid progress file from Rainbow Words Trainer.');
+      }
     }
     function updateBadges(){
       els.badgeRow.innerHTML = '';
@@ -2297,6 +2532,8 @@
     });
     
     els.closeProfileBtn.addEventListener('click', closeProfile);
+    els.exportProgressBtn.addEventListener('click', exportProgress);
+    els.importProgressBtn.addEventListener('click', importProgress);
     
     // Close profile when clicking overlay
     els.profileOverlay.addEventListener('click', (e) => {
