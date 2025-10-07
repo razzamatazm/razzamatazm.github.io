@@ -247,10 +247,9 @@
     @keyframes badgePop{
       0%{transform:scale(0) rotate(0deg); opacity:0;}
       50%{transform:scale(4) rotate(360deg); opacity:1;}
-      70%{transform:scale(4.2) rotate(420deg); opacity:1;}
-      85%{transform:scale(0.8) rotate(450deg); opacity:1;}
-      95%{transform:scale(1.1) rotate(460deg); opacity:1;}
-      100%{transform:scale(1) rotate(460deg); opacity:1;}
+      70%{transform:scale(4.2) rotate(360deg); opacity:1;}
+      85%{transform:scale(0.85) rotate(360deg); opacity:1;}
+      100%{transform:scale(1) rotate(360deg); opacity:1;}
     }
     @keyframes badgeFadeOut{
       0%{opacity:1;}
@@ -657,7 +656,7 @@
     // Learning science improvements
     const REVIEW_THRESHOLD_DAYS = 2;    // words not seen in 2+ days get priority
     const RETRY_DELAY = 3;              // show 3 other words before retry
-    const MASTERY_STREAK_REQUIRED = 3;  // require 3 correct in a row
+    const MASTERY_STREAK_REQUIRED = 2;  // require 2 correct in a row
     const MASTERY_SESSIONS_REQUIRED = 1; // require 1 session (more reasonable for single study session)
     const MASTERY_TIME_SPAN_DAYS = 0;   // require 0 days (allow same-day mastery)
     const MASTERED_STREAK = MASTERY_STREAK_REQUIRED; // Now uses enhanced mastery requirements
