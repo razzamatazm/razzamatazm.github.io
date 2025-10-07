@@ -964,11 +964,9 @@
           for (let prevLevel = 0; prevLevel < levelIdx; prevLevel++) {
             const prevWords = state.perLevel[prevLevel].words;
             prevWords.forEach((word, wordIdx) => {
-              const daysSince = getDaysSince(word.lastSeenTimestamp);
-              
-              // Include mastered words from previous levels more frequently for better retention
-              // Tricky words always included for practice
-              if (word.tricky || word.mastered || daysSince >= 3) {
+              // Always include tricky and mastered words for better retention
+              // This ensures same-day practice includes previous level words
+              if (word.tricky || word.mastered) {
                 allWords.push({
                   word: word,
                   levelIdx: prevLevel,
