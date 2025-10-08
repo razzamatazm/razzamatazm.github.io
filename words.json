@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "levels": [
+    {
+      "name": "Red",
+      "color": "#ef4444",
+      "badge": "🍓",
+      "words": [
+        "I", "said", "the", "was", "a", "me", "is", "my", "and", "we", "see", "go"
+      ]
+    },
+    {
+      "name": "Orange",
+      "color": "#f97316",
+      "badge": "🍊",
+      "words": [
+        "big", "for", "am", "in", "play", "one", "two", "you", "to", "do", "get", "red", "it"
+      ]
+    },
+    {
+      "name": "Yellow",
+      "color": "#eab308",
+      "badge": "🐤",
+      "words": [
+        "are", "at", "be", "can", "blue", "not", "run", "up", "three", "his", "sees", "he", "she"
+      ]
+    },
+    {
+      "name": "Green",
+      "color": "#22c55e",
+      "badge": "🍀",
+      "words": [
+        "as", "has", "come", "find", "help", "all", "what", "went", "wasn't", "isn't", "hasn't", "little", "yellow"
+      ]
+    },
+    {
+      "name": "Blue",
+      "color": "#3b82f6",
+      "badge": "💧",
+      "words": [
+        "away", "funny", "here", "down", "jump", "make", "look", "could", "should", "would", "black", "this", "that"
+      ]
+    },
+    {
+      "name": "Purple",
+      "color": "#a855f7",
+      "badge": "🔮",
+      "words": [
+        "ate", "brown", "but", "came", "did", "four", "good", "have", "like", "on", "will", "where", "ran"
+      ]
+    },
+    {
+      "name": "Pink",
+      "color": "#ec4899",
+      "badge": "🦄",
+      "words": [
+        "work", "eat", "no", "yes", "into", "with", "say", "so", "white", "please", "new", "want", "pretty"
+      ]
+    },
+    {
+      "name": "Light Blue",
+      "color": "#38bdf8",
+      "badge": "☁️",
+      "words": [
+        "must", "now", "our", "ride", "saw", "soon", "out", "there", "they", "too", "under", "well", "who"
+      ]
+    }
+  ]
+}
