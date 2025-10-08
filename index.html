@@ -2757,10 +2757,18 @@
 
     // ======= BOOT =======
     function boot(){
-      console.log('Boot starting...', { studentName, levelIdx, phase, wordsCount: words().length });
+      console.log('Boot starting...', { studentName, levelIdx, phase, levelsLoaded: LEVELS.length });
+      
+      // Ensure state has correct number of levels
+      if (!state.perLevel || state.perLevel.length !== LEVELS.length) {
+        console.log('Initializing state for', LEVELS.length, 'levels');
+        state = makeFreshState();
+      }
       
       // Ensure per-level words match config
       state.perLevel.forEach((_, i)=>syncWordsWithConfig(i));
+      
+      console.log('State initialized, current level words:', words().length);
 
       // Reset phase if in general review mode to avoid prefinal/review phases
       if (reviewMode === 'general') {
