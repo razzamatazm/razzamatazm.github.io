@@ -2763,6 +2763,25 @@
       if (!state.perLevel || state.perLevel.length !== LEVELS.length) {
         console.log('Initializing state for', LEVELS.length, 'levels');
         state = makeFreshState();
+        // Reset runtime variables from fresh state
+        levelIdx = state.levelIdx ?? 0;
+        phase = state.phase || 'study';
+        finalQueue = state.finalQueue || [];
+        finalPosition = state.finalPosition || 0;
+        seenTotal = state.seenTotal || 0;
+        firstPassQueue = state.firstPassQueue || [];
+        history = state.history || [];
+        testResults = state.testResults || [];
+        missedFromTest = state.missedFromTest || [];
+        reviewQueue = state.reviewQueue || [];
+        reviewSessionQueue = state.reviewSessionQueue || [];
+        reviewSessionPosition = state.reviewSessionPosition || 0;
+        reviewSessionResults = state.reviewSessionResults || [];
+        studentName = state.studentName || '';
+        cooldownNextKnown = state.cooldownNextKnown || 0;
+        reviewMode = state.reviewMode || 'current';
+        reviewStreak = state.reviewStreak || 10;
+        retryQueue = state.retryQueue || [];
       }
       
       // Ensure per-level words match config
