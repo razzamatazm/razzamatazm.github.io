@@ -728,10 +728,10 @@
     // perLevel.words: { text, seen, correct, wrong, streak, mastered:boolean, tricky:boolean, lastSeenTimestamp:Date, masteryDates:Date[], sessionsSeen:number }
     let state = loadState() || makeFreshState();
 
-    // Runtime
-    let levelIdx = state.levelIdx ?? 0;
+    // Runtime (these will be properly initialized after LEVELS loads)
+    let levelIdx = 0; // Will be set from state after validation
     let currentIndex = -1;
-    let phase = state.phase || 'study'; // 'study' | 'prefinal' | 'review' | 'final' | 'postreview'
+    let phase = 'study'; // Will be set from state after validation
     let finalQueue = state.finalQueue || [];
     let finalPosition = state.finalPosition || 0;
     let seenTotal = state.seenTotal || 0;
@@ -2757,32 +2757,35 @@
 
     // ======= BOOT =======
     function boot(){
-      console.log('Boot starting...', { studentName, levelIdx, phase, levelsLoaded: LEVELS.length });
+      console.log('Boot starting...', { levelsLoaded: LEVELS.length });
       
       // Ensure state has correct number of levels
       if (!state.perLevel || state.perLevel.length !== LEVELS.length) {
-        console.log('Initializing state for', LEVELS.length, 'levels');
+        console.log('Initializing fresh state for', LEVELS.length, 'levels');
         state = makeFreshState();
-        // Reset runtime variables from fresh state
-        levelIdx = state.levelIdx ?? 0;
-        phase = state.phase || 'study';
-        finalQueue = state.finalQueue || [];
-        finalPosition = state.finalPosition || 0;
-        seenTotal = state.seenTotal || 0;
-        firstPassQueue = state.firstPassQueue || [];
-        history = state.history || [];
-        testResults = state.testResults || [];
-        missedFromTest = state.missedFromTest || [];
-        reviewQueue = state.reviewQueue || [];
-        reviewSessionQueue = state.reviewSessionQueue || [];
-        reviewSessionPosition = state.reviewSessionPosition || 0;
-        reviewSessionResults = state.reviewSessionResults || [];
-        studentName = state.studentName || '';
-        cooldownNextKnown = state.cooldownNextKnown || 0;
-        reviewMode = state.reviewMode || 'current';
-        reviewStreak = state.reviewStreak || 10;
-        retryQueue = state.retryQueue || [];
       }
+      
+      // Load runtime variables from state (now that state is validated)
+      levelIdx = Math.max(0, Math.min(state.levelIdx ?? 0, LEVELS.length - 1)); // Clamp to valid range
+      phase = state.phase || 'study';
+      finalQueue = state.finalQueue || [];
+      finalPosition = state.finalPosition || 0;
+      seenTotal = state.seenTotal || 0;
+      firstPassQueue = state.firstPassQueue || [];
+      history = state.history || [];
+      testResults = state.testResults || [];
+      missedFromTest = state.missedFromTest || [];
+      reviewQueue = state.reviewQueue || [];
+      reviewSessionQueue = state.reviewSessionQueue || [];
+      reviewSessionPosition = state.reviewSessionPosition || 0;
+      reviewSessionResults = state.reviewSessionResults || [];
+      studentName = state.studentName || '';
+      cooldownNextKnown = state.cooldownNextKnown || 0;
+      reviewMode = state.reviewMode || 'current';
+      reviewStreak = state.reviewStreak || 10;
+      retryQueue = state.retryQueue || [];
+      
+      console.log('Runtime vars loaded:', { studentName, levelIdx, phase });
       
       // Ensure per-level words match config
       state.perLevel.forEach((_, i)=>syncWordsWithConfig(i));
